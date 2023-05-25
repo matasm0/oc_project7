@@ -1,0 +1,34 @@
+@import "./custom.scss";
+@import "~bootstrap/scss/bootstrap";
+
+.main {
+    background-color: #282c34;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
+    margin-top: 56px;
+    margin-bottom: 40px;
+}
+
+.body {
+    background-color: $primary;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome {
+    height: 20vh;
+    font-size: calc(25px + 2vmin);
+    font-weight: bold;
+    text-align: center;
+}
+
+.login {
+    padding: calc(1.2rem * 1.4);
+    background-color: $secondary;
+}
