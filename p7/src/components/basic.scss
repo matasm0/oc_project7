@@ -1,0 +1,27 @@
+.header, .footer {
+    background: $primary
+}
+
+.header {
+    border-bottom: 2px solid rgba(131, 117, 143, 0.5);
+}
+
+.footer {
+    border-top: 2px solid rgba(131, 117, 143, 0.5);
+}
+
+.basic-text {
+    color: $four;
+}
+
+.basic-link {
+    color: $link-color;
+
+    &:hover, &:active {
+        color: $link-hover-color;
+    }
+
+    &:focus {
+        color: $link-color;
+    }
+}

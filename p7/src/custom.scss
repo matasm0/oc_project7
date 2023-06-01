@@ -1,5 +1,35 @@
 // Variables and stuff
 
 // Include before including bootstrap
-$primary: #282c34;
-$secondary: #384652;
+
+$primary: #1B262C;
+$secondary: #0F4C75;
+$tertiary: #3282B8;
+$four: #BBE1FA;
+
+$link-color: $four;
+$nav-link-color: $four;
+$link-hover-color: #f7fcff;
+
+@mixin gutters {
+    @media (min-width: 576px) {
+        max-width: 540px;
+    }
+
+    @media (min-width: 768px) {
+        max-width: 720px;
+    }
+
+    @media (min-width: 992px) {
+        max-width: 960px;
+    }
+
+    @media (min-width: 1200px) {
+        max-width: 1140px;
+    }
+
+    @media (min-width: 1400px) {
+        max-width: 1320px;
+    }
+}
+

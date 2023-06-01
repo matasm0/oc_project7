@@ -1,14 +1,16 @@
 // import './App.css';
 // import 'bootstrap/dist/css/bootstrap.min.css';
-import "./App.scss";
+import "../App.scss";
 
 // import { Button, Alert, Breadcrumb, Card, Form, Container, Row, Col } from 'react-bootstrap';
-import { Navbar, Nav, Container, Row, Col, Form, Button } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+import { Link } from "react-router-dom";
+import { Header, Footer } from "../components/basic";
 
-function App() {
+function Entry() {
   return (
     // <div className="body">
-    <Container style={{ height: "70vh" }} className="body" fluid>
+    <Container style={{ height: "100vh" }} className="body" fluid>
       <Header />
       <main className="main">
         <Login />
@@ -44,7 +46,9 @@ function Login() {
         </Row>
         <Row>
           <Col>
-            <Button size="lg" type="submit" className="mt-3" style={{width: "100%"}}>Login</Button>
+            <Link to={"/home"}>
+                <Button size="lg" type="submit" className="mt-3 login-button" style={{width: "100%"}}>Login</Button>
+            </Link>
           </Col>
         </Row>
       </Form>
@@ -52,32 +56,8 @@ function Login() {
   );
 }
 
-function Header() {
-  return (
-    <header>
-      <Navbar fixed='top' className="header">
-        <Container>
-          <Navbar.Brand href='#' className="basic-text">Test</Navbar.Brand>
-          <Nav>
-            <Nav.Link href="#" className="basic-text">Sign Up</Nav.Link>
-            <Nav.Link href="#" className="basic-text">Log In</Nav.Link>
-          </Nav>
-        </Container>
-      </Navbar>
-    </header>
-  );
+function SubmitButton(signIn=false) {
+
 }
 
-function Footer() {
-  return (
-    <footer>
-      <Navbar fixed="bottom" className='footer'>
-        <Container>
-          <p className="basic-text">A</p>
-        </Container>
-      </Navbar>
-    </footer>
-  )
-}
-
-// export default App;
+export default Entry;

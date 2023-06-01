@@ -1,0 +1,45 @@
+@import "./custom.scss";
+@import "~bootstrap/scss/bootstrap";
+
+.home-body {
+    background-color: $secondary;
+}
+
+.home {
+    @include gutters();
+    display: flex;
+
+    min-height: 100vh;
+
+    padding: 50px 0;
+
+    background-color: $secondary;
+
+    .home-sidebar {
+        margin: 0;
+        width: 20%;
+        height: auto;
+        border: 2px solid black;
+    }
+
+    .home-main {
+        margin: 0;
+        width: 100%;
+        height: auto;
+        border: 2px solid green;
+        background-color: $four;
+
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+
+        column-gap: 40px;
+        row-gap: 40px;
+
+        &>* {
+            width: 450px;
+        }
+    }
+}

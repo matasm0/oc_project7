@@ -1,20 +1,42 @@
 @import "./custom.scss";
 @import "~bootstrap/scss/bootstrap";
+@import "./components/basic.scss";
+
+.tp {
+    background-color: transparent;
+}
 
 .main {
-    background-color: #282c34;
+    @include gutters();
+
+    width: 100%;
+    height: 100%;
+
+    margin-right: auto;
+    margin-left: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     font-size: calc(10px + 2vmin);
     color: white;
-    margin-top: 56px;
-    margin-bottom: 40px;
+    background: rgba(112, 100, 122, 0.2);
+    backdrop-filter: saturate(120%) blur(30px);
+    border-left: 1px solid rgba(112, 100, 122, 0.3);
+    border-right: 1px solid rgba(112, 100, 122, 0.3);
 }
 
 .body {
-    background-color: $primary;
+    background: url("./imgs/alena-aenami-eclipse-1k.jpg");
+    background-size: cover;
+    background-position: 50% 20%;
+    @media (max-width: 1000px) {
+        background: url("./imgs/illust_76220766_20210617_123125.png") no-repeat; 
+        background-size: cover;
+        background-position: 50% 60%;
+    }
+    // object-fit: fill;
+    // background-color: $primary;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -30,5 +52,16 @@
 
 .login {
     padding: calc(1.2rem * 1.4);
-    background-color: $secondary;
+    // background-color: $secondary;
+
+    .row {
+        gap: 3vw;
+        row-gap: 20px;
+        margin-bottom: 20px
+    }
+
+    .login-button {
+        background-color: $tertiary;
+    }
 }
+
