@@ -9,10 +9,10 @@ export function Header() {
           {/* <Navbar.Brand prefix={'logo'} href='/' className="basic-link">Test</Navbar.Brand> */}
           <Navbar.Brand className='basic-link'><Link to={'/'}>Test</Link></Navbar.Brand>
           <Nav>
-            {/* <Nav.Link href="#" className="basic-text">Sign Up</Nav.Link>
-            <Nav.Link href="#" className="basic-text">Log In</Nav.Link> */}
-            <Link to={"/"} className="basic-link">Sign Up</Link>
-            <Link to={"/"} className="basic-link">Log In</Link>
+            <Nav.Link href="#" className="basic-link">Sign Up</Nav.Link>
+            <Nav.Link href="/login" className="basic-link">Log In</Nav.Link>
+            <Link to={"/signup"} className="basic-link">Sign Up</Link>
+            <Link to={"/login"} className="basic-link">Log In</Link>
           </Nav>
         </Container>
       </Navbar>

@@ -2,7 +2,7 @@ import "../Home.scss";
 
 import { Link } from "react-router-dom"
 import { Header, Footer } from "../components/basic";
-import { Container, Card } from "react-bootstrap";
+import { Container, Card, Tabs, Tab, Button} from "react-bootstrap";
 
 // const Home = () => {
 //     return <h1>
@@ -24,10 +24,22 @@ import { Container, Card } from "react-bootstrap";
                     </ul>
                 </Container>
                 <Container className="home-main">
-                    <Post />
-                    <Post />
-                    <Post />
-                    <Post />
+                    <Container className="home-navs">
+                        <Tabs style={{justifySelf:"flex-start"}} className="home-tabs">
+                            <Tab title="All"></Tab>
+                            <Tab title="Work"></Tab>
+                            <Tab title="Personal"></Tab>
+                        </Tabs>
+                        <Link to="/upload">
+                            <Button>Upload</Button>
+                        </Link>
+                    </Container>
+                    <Container className="home-posts">
+                        <Post />
+                        <Post />
+                        <Post />
+                        <Post />
+                    </Container>
                 </Container>
             </Container>
             <Footer/>

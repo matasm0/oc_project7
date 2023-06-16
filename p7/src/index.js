@@ -21,6 +21,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import PostPage from "./pages/PostPage";
 import Entry from "./pages/Login";
+import Upload from "./pages/Upload";
 
 export default function App() {
   return (
@@ -29,8 +30,10 @@ export default function App() {
         <Route path="/">
           <Route index element={<Entry />} />
           <Route path="home" element={<Home />} />
-          <Route path="login" element={<Entry />} />
+          <Route path="login" element={<Entry isLogin/>} />
+          <Route path="signup" element={<Entry />} />
           <Route path="post/:postId" element={<PostPage />} />
+          <Route path="upload" element={<Upload />} />
         </Route>
       </Routes>
     </BrowserRouter>
