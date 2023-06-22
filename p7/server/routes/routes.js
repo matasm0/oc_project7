@@ -18,6 +18,7 @@ router.post('/auth/login', userCtrl.login);
 // router.post('/:id/like', auth, sauceCtrl.likeDislike);
 
 router.post('/posts/create', postCtrl.postPost);
+router.get('/posts/get', postCtrl.getPosts);
 
 
 module.exports = router;

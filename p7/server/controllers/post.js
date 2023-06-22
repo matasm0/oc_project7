@@ -25,3 +25,11 @@ async function postPost(req, res, next) {
 }
 
 exports.postPost = postPost;
+
+async function getPosts(req, res, next) {
+    let postList = await Post.find().exec();
+
+    return res.status(200).json({posts : JSON.stringify(postList)});
+}
+
+exports.getPosts = getPosts;

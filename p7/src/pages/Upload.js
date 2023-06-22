@@ -1,6 +1,9 @@
 import { Form, Row, Col, Container, Button } from "react-bootstrap"
 import { Link } from "react-router-dom"
 
+import { useDispatch, useSelector } from "react-redux"
+// import { create } from "../components/redux/post"
+
 function Upload() {
     let title = ""
 
@@ -20,6 +23,9 @@ function Upload() {
         })
     }
 
+    const dispatch = useDispatch();
+    const posts = useSelector(state => state.posts);
+
     return (
         <>
             <Form onSubmit={upload}>
@@ -33,6 +39,8 @@ function Upload() {
                     </Col>
                 </Row>
                 <Link to={"/home"}><Button>Cancel</Button></Link>
+                {/* <Button onClick={(e) => {dispatch(addTodo())}}>TEST</Button> */}
+                <Button onClick={(e) => {console.log(posts)}}>TEST</Button>
                 <Button type="submit">Submit</Button>
             </Form>
         </>

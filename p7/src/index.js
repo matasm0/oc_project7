@@ -23,6 +23,9 @@ import PostPage from "./pages/PostPage";
 import Entry from "./pages/Login";
 import Upload from "./pages/Upload";
 
+import store from "./store";
+import { Provider } from "react-redux";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -41,4 +44,8 @@ export default function App() {
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+root.render(
+  <Provider store={store}>
+    <App />
+  </Provider>
+  );

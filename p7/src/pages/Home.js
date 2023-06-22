@@ -2,7 +2,11 @@ import "../Home.scss";
 
 import { Link } from "react-router-dom"
 import { Header, Footer } from "../components/basic";
-import { Container, Card, Tabs, Tab, Button} from "react-bootstrap";
+import { Container, Card, Tabs, Tab, Button } from "react-bootstrap";
+
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { getPosts } from "../redux/post";
 
 // const Home = () => {
 //     return <h1>
@@ -10,9 +14,10 @@ import { Container, Card, Tabs, Tab, Button} from "react-bootstrap";
 //     </h1>;
 //   };
 // Look into tabs?
-  function Home() {
+function Home() {
     return (
         <div className="home-body">
+            <PostList/>
             <Header />
             <Container className="home">
                 <Container className="home-sidebar">
@@ -25,7 +30,7 @@ import { Container, Card, Tabs, Tab, Button} from "react-bootstrap";
                 </Container>
                 <Container className="home-main">
                     <Container className="home-navs">
-                        <Tabs style={{justifySelf:"flex-start"}} className="home-tabs">
+                        <Tabs style={{ justifySelf: "flex-start" }} className="home-tabs">
                             <Tab title="All"></Tab>
                             <Tab title="Work"></Tab>
                             <Tab title="Personal"></Tab>
@@ -35,19 +40,33 @@ import { Container, Card, Tabs, Tab, Button} from "react-bootstrap";
                         </Link>
                     </Container>
                     <Container className="home-posts">
-                        <Post />
-                        <Post />
-                        <Post />
-                        <Post />
+                        <PostObject />
+                        <PostObject />
+                        <PostObject />
+                        <PostObject />
                     </Container>
                 </Container>
             </Container>
-            <Footer/>
+            <Footer />
         </div>
     )
-  }
+}
 
-  function Post() {
+function PostList() {
+    const postsList = useSelector(state => state.posts.list);
+    const postsState = useSelector(state => state.posts.state);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        if (postsState === "initial") {
+            dispatch(getPosts());
+        }
+    }, [postsState, dispatch]);
+
+    return (<></>)
+}
+
+function PostObject() {
     // Take in post id or something so it can fill itself
     return (
         <Card>
@@ -60,7 +79,6 @@ import { Container, Card, Tabs, Tab, Button} from "react-bootstrap";
             </Card.Body>
         </Card>
     );
-  }
-  
-  export default Home;
-  
+}
+
+export default Home;
