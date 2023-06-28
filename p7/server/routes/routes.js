@@ -3,6 +3,7 @@ const router = express.Router();
 
 const userCtrl = require('../controllers/user');
 const postCtrl = require('../controllers/post');
+const commentCtrl = require('../controllers/comment');
 
 // const multer = require('../middleware/multer-config');
 // const auth = require('../middleware/auth');
@@ -20,5 +21,7 @@ router.post('/auth/login', userCtrl.login);
 router.post('/posts/create', postCtrl.postPost);
 router.get('/posts/get', postCtrl.getPosts);
 
+router.post('/comments/create', commentCtrl.postComment)
+router.get('/posts/comments/:postId', commentCtrl.getCommentsPost)
 
 module.exports = router;

@@ -6,7 +6,8 @@ const postDefault = {
     dislikes : 0,
     usersLiked : [],
     usersDisliked : [],
-    imageUrl : "a"
+    imageUrl : "a",
+    comments : []
 }
 
 async function postPost(req, res, next) {
@@ -19,9 +20,9 @@ async function postPost(req, res, next) {
         return res.status(401).json({message : "Failed to create post", e})
     }
 
-    await newPost.save();
+    let newPostObject = await newPost.save();
 
-    res.status(201).json({message : "Created"})
+    res.status(201).json({message : "Created", post : newPostObject});
 }
 
 exports.postPost = postPost;
@@ -29,7 +30,7 @@ exports.postPost = postPost;
 async function getPosts(req, res, next) {
     let postList = await Post.find().exec();
 
-    return res.status(200).json({posts : JSON.stringify(postList)});
+    return res.status(200).json({posts : postList});
 }
 
 exports.getPosts = getPosts;

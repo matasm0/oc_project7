@@ -1,11 +1,15 @@
 import { Form, Row, Col, Container, Button } from "react-bootstrap"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 import { useDispatch, useSelector } from "react-redux"
-// import { create } from "../components/redux/post"
+import { create } from "../redux/post"
 
 function Upload() {
     let title = ""
+
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const posts = useSelector(state => state.posts);
 
     const inputHandler = (e) => {
         title = e.target.value;
@@ -20,11 +24,12 @@ function Upload() {
             body : JSON.stringify({
                 'title' : title,
             })
-        })
+        }).then((res) => res.json()).then(data => {
+            dispatch(create(data['post']))
+            navigate("/home");
+        });
+        
     }
-
-    const dispatch = useDispatch();
-    const posts = useSelector(state => state.posts);
 
     return (
         <>
@@ -39,8 +44,6 @@ function Upload() {
                     </Col>
                 </Row>
                 <Link to={"/home"}><Button>Cancel</Button></Link>
-                {/* <Button onClick={(e) => {dispatch(addTodo())}}>TEST</Button> */}
-                <Button onClick={(e) => {console.log(posts)}}>TEST</Button>
                 <Button type="submit">Submit</Button>
             </Form>
         </>

@@ -6,7 +6,7 @@ import { Container, Card, Tabs, Tab, Button } from "react-bootstrap";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { getPosts } from "../redux/post";
+import { getNewPosts, getPostById } from "../redux/post";
 
 // const Home = () => {
 //     return <h1>
@@ -17,7 +17,6 @@ import { getPosts } from "../redux/post";
 function Home() {
     return (
         <div className="home-body">
-            <PostList/>
             <Header />
             <Container className="home">
                 <Container className="home-sidebar">
@@ -40,10 +39,11 @@ function Home() {
                         </Link>
                     </Container>
                     <Container className="home-posts">
+                        {/* <PostObject />
                         <PostObject />
                         <PostObject />
-                        <PostObject />
-                        <PostObject />
+                        <PostObject /> */}
+                        <PostList/>
                     </Container>
                 </Container>
             </Container>
@@ -59,23 +59,32 @@ function PostList() {
 
     useEffect(() => {
         if (postsState === "initial") {
-            dispatch(getPosts());
+            dispatch(getNewPosts());
         }
     }, [postsState, dispatch]);
 
-    return (<></>)
+    let postObjects;
+    if (postsState === "loaded") {
+        postObjects = postsList.map(post => {
+            // console.log(post._id)
+            return <PostObject key={post._id} {...post}/>
+        })
+
+    }
+
+    return (<>{postObjects}</>)
 }
 
-function PostObject() {
+function PostObject(post) {
     // Take in post id or something so it can fill itself
     return (
         <Card>
             <Card.Img variant="top" src={require("../imgs/DATBOI.jpg")}></Card.Img>
             <Card.Body>
                 <Card.Text>
-                    Testing testing
+                    {post.title}
                 </Card.Text>
-                <Link to={`/post/1`}>Post Page  </Link>
+                <Link to={`/post/${post._id}`}>Post Page</Link>
             </Card.Body>
         </Card>
     );

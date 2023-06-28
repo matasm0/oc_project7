@@ -1,15 +1,38 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-export const getPosts = createAsyncThunk('posts/getPosts', async () => {
+// export const getPosts = createAsyncThunk('posts/getPosts', async () => {
+//     const res = await fetch('http://localhost:3001/api/posts/get');
+//     const data = await res.json();
+//     return data['posts'];
+// });
+
+export const getPosts = (state) => state.posts.list;
+
+export const getNewPosts = createAsyncThunk('posts/getNewPosts', async () => {
     const res = await fetch('http://localhost:3001/api/posts/get');
     const data = await res.json();
-    console.log(data);
     return data['posts'];
-})
+});
+
+export const getPostById = createAsyncThunk('posts/getPostId', async (id) => {
+    
+});
+
+// export const getPostLikeStatus = ()
+
+// export const createPost = createAsyncThunk('posts/createPost', async () => {
+//     const res = await fetch('http://localhost:3001/api/posts/create');
+//     const data = await res.json();
+//     console.log(data);
+//     return data['post']
+// })
 
 const initialState = {
     state : "initial",
     list : [],
+
+    current: null,
+    currentState : "unloaded",
 };
 
 const postSlice = createSlice({
@@ -17,7 +40,7 @@ const postSlice = createSlice({
     initialState,
     reducers: { // These need to be run after the async call to actually update posts in the database
         create: (state, action) => {
-            console.log("Create Post");
+            state.list = state.list.concat(action.payload);
         },
         update: (state, action) => {
             console.log("Update post"); 
@@ -28,15 +51,19 @@ const postSlice = createSlice({
     },
     extraReducers(builder) {
         builder
-            .addCase(getPosts.pending, (state, action) => {
+            .addCase(getNewPosts.pending, (state, action) => {
                 state.state = 'loading';
             })
-            .addCase(getPosts.fulfilled, (state, action) => {
+            .addCase(getNewPosts.fulfilled, (state, action) => {
                 state.state = 'loaded';
+                state.list = state.list.concat(action.payload);
             })
-            .addCase(getPosts.rejected, (state, action) => {
+            .addCase(getNewPosts.rejected, (state, action) => {
                 state.state = 'rejected';
             })
+            // .addCase(createPost.fulfilled, (state, action) => {
+            //     state.list = state.list.concat(action.payload);
+            // })
     }
 })
 

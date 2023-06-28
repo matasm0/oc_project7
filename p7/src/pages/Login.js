@@ -8,6 +8,9 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Header, Footer } from "../components/basic";
 import { useState } from "react";
 
+import { useSelector, useDispatch } from "react-redux";
+import { login } from "../redux/user";
+
 function Entry(props) {
 
     return (
@@ -30,7 +33,6 @@ function Login({ isLogin }) {
     
     const loginSubmit = (e) => {
         e.preventDefault();
-        console.log(e);
         fetch('http://localhost:3001/api/auth/login', 
         {
             method : "POST",
@@ -40,13 +42,18 @@ function Login({ isLogin }) {
                 'password' : password
             })
         }).then(res => {
-            if (res.status == 200)
+            if (res.status == 200) res.json().then(data => {
+                // dispatch(login(data.userId));
+                dispatch({type: "user/login", payload: data.userId})
                 navigate("/home");
+            })
         }).catch(error => {
             // do sumn
             console.log("A");
         })
     }
+
+    const dispatch = useDispatch();
 
     const signupSubmit = (e) => {
         e.preventDefault();
@@ -69,7 +76,10 @@ function Login({ isLogin }) {
                         'password' : password
                     })
                 }).then(res => {
-                    if (res.status == 200) navigate("/home");
+                    if (res.status == 200) res.json().then(data => {
+                        dispatch({type: "user/login", payload: data.userId});
+                        navigate("/home");
+                    })
                 })
             }
         })

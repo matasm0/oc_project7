@@ -8,7 +8,8 @@ const postSchema = mongoose.Schema({
     likes : {type : Number, required : true},
     dislikes : {type : Number, required : true},
     usersLiked : {type : [String], required : false},
-    usersDisliked : {type : [String], required : false}
+    usersDisliked : {type : [String], required : false},
+    comments : {type : [String], required : true}
 });
 
 module.exports = mongoose.model("Post", postSchema, collection = "posts");
