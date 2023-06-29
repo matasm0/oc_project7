@@ -11,10 +11,14 @@ const postDefault = {
 }
 
 async function postPost(req, res, next) {
+    const imageUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
     let newPost;
 
+    console.log(imageUrl);
+    console.log(req.body);
+
     try {
-        newPost = new Post({...postDefault, ...req.body});
+        newPost = new Post({...postDefault, ...req.body, imageUrl});
     }
     catch (e) {
         return res.status(401).json({message : "Failed to create post", e})
@@ -34,3 +38,8 @@ async function getPosts(req, res, next) {
 }
 
 exports.getPosts = getPosts;
+
+exports.getPostId = async (req, res, next) => {
+    const post = await Post.find({_id : req.params['id']}).exec();
+    return res.status(200).json({post : post[0]});
+}

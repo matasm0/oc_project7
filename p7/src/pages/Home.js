@@ -6,7 +6,8 @@ import { Container, Card, Tabs, Tab, Button } from "react-bootstrap";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { getNewPosts, getPostById } from "../redux/post";
+import { getNewPosts, getPostById, getPosts } from "../redux/post";
+import { findUser } from "../redux/user";
 
 // const Home = () => {
 //     return <h1>
@@ -53,7 +54,9 @@ function Home() {
 }
 
 function PostList() {
-    const postsList = useSelector(state => state.posts.list);
+    // const postsList = useSelector(state => state.posts.list);
+    const postsList = useSelector(state => getPosts(state));
+    
     const postsState = useSelector(state => state.posts.state);
     const dispatch = useDispatch();
 
@@ -77,12 +80,14 @@ function PostList() {
 
 function PostObject(post) {
     // Take in post id or something so it can fill itself
+    const user = useSelector(state => findUser(state, post.userId));
+    
     return (
         <Card>
-            <Card.Img variant="top" src={require("../imgs/DATBOI.jpg")}></Card.Img>
+            <Card.Img variant="top" src={post.imageUrl}></Card.Img>
             <Card.Body>
                 <Card.Text>
-                    {post.title}
+                    {post.title} posted by {user ? user.email : ""}
                 </Card.Text>
                 <Link to={`/post/${post._id}`}>Post Page</Link>
             </Card.Body>

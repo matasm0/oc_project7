@@ -44,12 +44,11 @@ function Login({ isLogin }) {
         }).then(res => {
             if (res.status == 200) res.json().then(data => {
                 // dispatch(login(data.userId));
-                dispatch({type: "user/login", payload: data.userId})
+                dispatch({type: "user/login", payload: data})
                 navigate("/home");
             })
         }).catch(error => {
             // do sumn
-            console.log("A");
         })
     }
 
@@ -77,7 +76,8 @@ function Login({ isLogin }) {
                     })
                 }).then(res => {
                     if (res.status == 200) res.json().then(data => {
-                        dispatch({type: "user/login", payload: data.userId});
+                        console.log(data);
+                        dispatch({type: "user/login", payload: data});
                         navigate("/home");
                     })
                 })

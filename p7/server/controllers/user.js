@@ -29,6 +29,8 @@ async function login(req, res, next) {
                 )
                 res.status(200).json({
                     userId : user._id,
+                    email : user.email,
+                    // Other stuff when they drop
                     token : token
                 });
             }
@@ -69,3 +71,13 @@ async function signup(req, res, next) {
 }
 
 exports.signup = (req, res, next) => signup(req, res, next);
+
+exports.getUsers = async (req, res, next) => {
+    let usersList = await User.find().exec();
+    let toReturn = []
+    usersList.forEach(user => {
+        // We need to add usernames and pfps, liked/dislike list
+        toReturn.push({'_id' : user._id, 'email' : user.email, 'posts' : user.posts, 'comments' : user.comments,})
+    });
+    return res.status(200).json({usersList : toReturn});
+}

@@ -15,7 +15,9 @@ export const getNewPosts = createAsyncThunk('posts/getNewPosts', async () => {
 });
 
 export const getPostById = createAsyncThunk('posts/getPostId', async (id) => {
-    
+    const res = await fetch('http://localhost:3001/api/posts/get/' + id);
+    const data = await res.json();
+    return data['post'];
 });
 
 // export const getPostLikeStatus = ()
@@ -47,7 +49,11 @@ const postSlice = createSlice({
         },
         remove: (state, action) => {
             console.log("Remove post");
-        }
+        },
+        unload: (state, action) => {
+            state.current = null;
+            state.currentState = "unloaded";
+        },
     },
     extraReducers(builder) {
         builder
@@ -61,9 +67,11 @@ const postSlice = createSlice({
             .addCase(getNewPosts.rejected, (state, action) => {
                 state.state = 'rejected';
             })
-            // .addCase(createPost.fulfilled, (state, action) => {
-            //     state.list = state.list.concat(action.payload);
-            // })
+            .addCase(getPostById.pending, (state, action) => {state.currentState = 'loading'})
+            .addCase(getPostById.fulfilled, (state, action) => {
+                state.currentState = 'loaded';
+                state.current = action.payload;
+            })
     }
 })
 

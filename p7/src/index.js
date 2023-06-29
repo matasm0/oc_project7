@@ -22,6 +22,7 @@ import Home from "./pages/Home";
 import PostPage from "./pages/PostPage";
 import Entry from "./pages/Login";
 import Upload from "./pages/Upload";
+import Data from "./data";
 
 import store from "./store";
 import { Provider } from "react-redux";
@@ -43,9 +44,12 @@ export default function App() {
   );
 }
 
+// Add another high level component somewhere whos only job is to keep track of localStorage stuff
+// like login
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Provider store={store}>
+    <Data />
     <App />
   </Provider>
   );
