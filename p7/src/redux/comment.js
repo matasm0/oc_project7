@@ -27,7 +27,7 @@ const commentSlice = createSlice({
             }
         },
         unload(state, action) {
-            state = {...initialState};
+            return initialState;
             // state.state = "initial";
             // state.dict = {};
             // state.list = [];

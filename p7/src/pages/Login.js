@@ -44,7 +44,7 @@ function Login({ isLogin }) {
         }).then(res => {
             if (res.status == 200) res.json().then(data => {
                 // dispatch(login(data.userId));
-                dispatch({type: "user/login", payload: data})
+                dispatch({type: "users/login", payload: data})
                 navigate("/home");
             })
         }).catch(error => {
@@ -77,7 +77,7 @@ function Login({ isLogin }) {
                 }).then(res => {
                     if (res.status == 200) res.json().then(data => {
                         console.log(data);
-                        dispatch({type: "user/login", payload: data});
+                        dispatch({type: "users/login", payload: data});
                         navigate("/home");
                     })
                 })

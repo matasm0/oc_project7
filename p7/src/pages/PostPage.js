@@ -7,20 +7,25 @@ import { useSelector, useDispatch } from "react-redux";
 import { getCommentsPost, getCommentsChildren, create } from "../redux/comment";
 import { getPostById } from "../redux/post";
 
+// Maybe have postpage collect all of the info (user and post) and send them down to its children
+
 function PostPage () {
   const { postId } =  useParams();
   // const temp = useSelector(state => likeStatus(state, postId));
 
   const [comment, setComment] = useState("");
 
-  const userId = useSelector(state => state.user.currentUser.id);
+  const userId = useSelector(state => state.users.currentUser._id);
+  const token = useSelector(state => state.users.currentUser.token);
   const dispatch = useDispatch();
 
   const post = useSelector(state => state.posts.current);
   const postState = useSelector(state => state.posts.currentState);
+  const postAuthorId = useSelector(state => state.posts.current.userId);
   
   // Better way to do this?
-  const usersDict = useSelector(state => state.user.dict);
+  const usersDict = useSelector(state => state.users.dict);
+  // This is stupid. Don't show anything while loading, then just pull from loaded post.
   let author = "";
   let postImage;
 
@@ -43,6 +48,7 @@ function PostPage () {
     postImage = <img src={post.imageUrl}/>
   }
   
+  console.log(postAuthorId);
   
 
   const inputHandler = (e) => {
@@ -53,15 +59,29 @@ function PostPage () {
   //   data => {console.log(data);}
   // )
 
-
+  const deletePost = (e) => {
+    fetch('http://localhost:3001/api/posts/delete/' + postId,
+    {
+      method : "DELETE",
+      headers : {
+        "Authorization" : "Bearer " + token
+      },
+      body : JSON.stringify(
+        post
+      )
+    })
+  }
 
   const postComment = (e) => {
     e.preventDefault();
     // Move to a dispatch
     fetch('http://localhost:3001/api/comments/create',
     {
-      method: "POST",
-      headers : {"Accept" : "application/json", "Content-Type" : "application/json"},
+      method : "POST",
+      headers : {
+        "Authorization" : "Bearer " + token,
+        "Accept" : "application/json", 
+        "Content-Type" : "application/json"},
       body : JSON.stringify({
         'author' : userId,
         'parent' : "root",
@@ -72,19 +92,21 @@ function PostPage () {
       dispatch(create(data));
     })})
   }
+
   // useEffect(() => {})
   // do fetch on postID
   return (
     <>
       {/* <img src={require("../imgs/DATBOI.jpg")} /> */}
       {postImage}
-      <p>{postName} posted by {author.email}</p>
+      <p>{postName} posted by {author ? author.email : ""}</p>
       <Form onSubmit={postComment}>
         <Form.Group>
           <Form.Control placeholder="commment" onChange={inputHandler}></Form.Control>
           <Form.Text></Form.Text>
         </Form.Group>
         <Button type="submit">Post</Button>
+        {(postAuthorId === userId) && <Button onClick={deletePost}>Delete</Button>}
       </Form>
       <Comments/>
     </>
@@ -93,7 +115,7 @@ function PostPage () {
 
 function Comments() {
   const { postId } =  useParams();
-  const userId = useSelector(state => state.user.currentUser.id);
+  const userId = useSelector(state => state.users.currentUser.id);
   const commentState = useSelector(state => state.comments.state);
   const commentsList = useSelector(state => getCommentsChildren(state, "root"));
   const dispatch = useDispatch();
@@ -122,7 +144,8 @@ function Comments() {
 // Have a user store with a dictionary of users that contains usernames and pfps mayhaps
 function Comment({comment, _maxLevel = 1}) {
   const { postId } =  useParams();
-  const userId = useSelector(state => state.user.currentUser.id);
+  const userId = useSelector(state => state.users.currentUser.id);
+  const token = useSelector(state => state.users.currentUser.token);
   const user = useSelector(state => findUser(state, userId));
   const dispatch = useDispatch();
   const content = comment.content;
@@ -137,7 +160,11 @@ function Comment({comment, _maxLevel = 1}) {
     fetch('http://localhost:3001/api/comments/create',
     {
       method: "POST",
-      headers : {"Accept" : "application/json", "Content-Type" : "application/json"},
+      headers : {
+        "Authorization" : "Bearer " + token,
+        "Accept" : "application/json",
+        "Content-Type" : "application/json"
+      },
       body : JSON.stringify({
         'author' : userId,
         'parent' : comment._id,
@@ -176,7 +203,7 @@ function Comment({comment, _maxLevel = 1}) {
   return (
     <Container>
       <Card>
-        <Card.Header>Author: {user.email}</Card.Header>
+        <Card.Header>Author: {user ? user.email : ""}</Card.Header>
         <Card.Body>
           <Card.Text>
             {content}

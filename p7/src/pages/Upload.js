@@ -12,7 +12,8 @@ function Upload() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const posts = useSelector(state => state.posts);
-    const userId = useSelector(state => state.user.currentUser.id);
+    const userId = useSelector(state => state.users.currentUser._id);
+    const userToken = useSelector(state => state.users.currentUser.token);
 
     const upload = (e) => {
         e.preventDefault();
@@ -24,6 +25,9 @@ function Upload() {
         {
             method : "POST",
             // headers : {"Content-Type" : "application/json"},
+            headers : {
+                "Authorization" : 'Bearer ' + userToken
+            },
             body : formData
         }).then((res) => res.json()).then(data => {
             dispatch(create(data['post']))
@@ -54,7 +58,5 @@ function Upload() {
         </>
     )
 } 
-
-// DOING Finish multer
 
 export default Upload;

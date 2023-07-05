@@ -14,8 +14,9 @@ async function login(req, res, next) {
         return;
     }
 
-    const user = await User.findOne({email : email});
-    
+    const tempRes = await User.findOne({email : email});
+    const user = tempRes['_doc']
+
     if (!user) {
         res.status(400).json({message : "Invalid username/password"});
     }
@@ -27,11 +28,14 @@ async function login(req, res, next) {
                     'RANDOM_TOKEN_SECRET',
                     {expiresIn : '24h'}
                 )
+
+                // We don't need __v, and we don't want to send the password
+                delete user['__v'];
+                delete user['password'];
+
                 res.status(200).json({
-                    userId : user._id,
-                    email : user.email,
-                    // Other stuff when they drop
-                    token : token
+                    ...user,
+                    token : token,
                 });
             }
             else 
@@ -56,6 +60,7 @@ async function signup(req, res, next) {
         res.status(400).json({message : "User already exists"});
     }
     else {
+        // FIX
         bcrypt.hash(password, 10).then((hashedPw) => {
             const user = new User({
                 email : email,
@@ -80,4 +85,49 @@ exports.getUsers = async (req, res, next) => {
         toReturn.push({'_id' : user._id, 'email' : user.email, 'posts' : user.posts, 'comments' : user.comments,})
     });
     return res.status(200).json({usersList : toReturn});
+}
+
+
+exports.addLikeDislikePost = async (req, res, next) => {
+    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    const postId = req.body.postId;
+
+    delete user['__v'];
+    delete user['password'];
+    let tempIndex;
+
+    switch (req.body.likeStatus) {
+        case 1:
+            // User already liked, unlike
+            if ((tempIndex = user.likedPosts.indexOf(postId)) != -1) {
+                user.likedPosts.splice(tempIndex, 1);
+            }
+            // Like
+            else {
+                // User disliked, undo and like
+                if ((tempIndex = user.dislikedPosts.indexOf(postId)) != -1) {
+                    user.dislikedPosts.splice(tempIndex, 1);
+                }
+                user.likedPosts.push(postId);
+            }
+            break;
+        case -1:
+            // User already dislikes, undislike
+            if ((tempIndex = user.dislikedPosts.indexOf(postId)) != -1) {
+                user.dislikedPosts.splice(tempIndex, 1);
+            }
+            // Dislike
+            else {
+                // User liked, undo and dislike
+                if ((tempIndex = user.likedPosts.indexOf(postId)) != -1) {
+                    user.likedPosts.splice(tempIndex, 1);
+                }
+                user.dislikedPosts.push(postId);
+            }
+            break;
+    }
+
+    await User.updateOne({_id : req.params['id']}, user);
+
+    return res.status(200).json({...user})
 }
