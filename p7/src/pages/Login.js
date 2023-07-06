@@ -14,15 +14,15 @@ import { login } from "../redux/user";
 function Entry(props) {
 
     return (
-        // <div className="body">
-        <Container style={{ height: "100vh" }} className="body" fluid>
+        <div className="loginHolder">
             <Header />
-            <main className="main">
-                <Login {...props}/>
-            </main>
+            <Container className="body" fluid>
+                <main className="main">
+                    <Login {...props}/>
+                </main>
+            </Container>
             <Footer />
-        </Container>
-        // </div>
+        </div>
     );
 }
 

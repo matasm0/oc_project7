@@ -27,9 +27,8 @@ export const addLikeDislike = createAsyncThunk('comments/addLikeDislike', async 
 });
 
 
-
 const initialState = {
-    state: "initial",
+    state: "unloaded",
     list: [], // Maybe pull and clear with each post?
     dict: {}
 };
@@ -43,7 +42,6 @@ const commentSlice = createSlice({
             // in the dictionary and add it as a child.
             state.list.push(action.payload);
             state.dict[action.payload._id] = action.payload;
-            console.log(action.payload, state.dict[action.payload.parent])
             if (action.payload.parent != "root") {
                 state.dict[action.payload.parent].children.push(action.payload._id);
             }

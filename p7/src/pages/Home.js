@@ -26,7 +26,7 @@ import { addLikeDislikePost } from "../redux/actions";
 function Home() {
     return (
         <div className="home-body">
-            <Header />
+            <Header currentPage={"home"}/>
             <Container className="home">
                 {/* <Container className="home-sidebar">
                     <ul>
@@ -37,7 +37,7 @@ function Home() {
                     </ul>
                 </Container> */}
                 <Container className="home-main">
-                    <Container className="home-navs">
+                    {/* <Container className="home-navs">
                         <Tabs style={{ justifySelf: "flex-start" }} className="home-tabs">
                             <Tab title="All"></Tab>
                             <Tab title="Work"></Tab>
@@ -46,7 +46,7 @@ function Home() {
                         <Link to="/upload">
                             <Button>Upload</Button>
                         </Link>
-                    </Container>
+                    </Container> */}
                     <Container className="home-posts">
                         <PostList/>
                     </Container>
@@ -67,7 +67,7 @@ function PostList() {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (postsState === "initial") {
+        if (postsState === "unloaded") {
             dispatch(getNewPosts());
         }
     }, [postsState, dispatch]);
@@ -76,7 +76,7 @@ function PostList() {
     if (postsState === "loaded") {
         postObjects = postsList.map(post => {
             // console.log(post._id)
-            return <PostObject key={post._id} {...post}/>
+            return <PostObject className="post" key={post._id} {...post}/>
         })
 
     }
@@ -106,19 +106,28 @@ function PostObject(post) {
     console.log(isLiked)
     
     return (
-        <Card>
-            <Card.Img variant="top" src={post.imageUrl}></Card.Img>
-            <Card.Body>
+        <Card className="post">
+            <Link to={`/post/${post._id}`}>
+                <Card.Img className="post-img" variant="top" src={post.imageUrl}></Card.Img>
+            </Link>
+            <Card.Body className="post-body">
                 <Row>
-                    <Col>
+                    <Col className="card-text">
+                        <Link to={`/post/${post._id}`}>
                             <Card.Text>{post.title} posted by {author ? author.email : ""}</Card.Text>
-                    </Col>
-                    <Col>
-                        <Button disabled={false} value={"like"} onClick={likeDislike}>Like</Button>
-                        <Button disabled={false} value={"dislike"} onClick={likeDislike}>Dislike</Button>
+                        </Link>
                     </Col>
                 </Row>
-                <Link to={`/post/${post._id}`}>Post Page</Link>
+                <Row>
+                    <Col className="likeDislike">
+                        <Button className={"like"} value={"like"} onClick={likeDislike}>
+                            {post.likes} {post.likes == 1 ? " Like" : " Likes"} 
+                        </Button>
+                        <Button className={"dislike"} value={"dislike"} onClick={likeDislike}>
+                            {post.dislikes} {post.dislikes == 1 ? " Dislike" : " Dislikes"} 
+                        </Button>
+                    </Col>
+                </Row>
             </Card.Body>
         </Card>
     );

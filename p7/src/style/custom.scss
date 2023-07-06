@@ -2,15 +2,15 @@
 
 // Include before including bootstrap
 
-$primary: #1B262C;
-$secondary: #0F4C75;
-$tertiary: #3282B8;
-$four: #BBE1FA;
+$primary: #000000;
+$secondary: #b240fb;
+$tertiary: #e0c2fe;
+$four: #ffffff;
 
 $link-color: $four;
 $nav-link-color: $four;
 $navbar-light-active-color: $four;
-$link-hover-color: #f7fcff;
+$link-hover-color: $tertiary;
 
 @mixin gutters {
     @media (min-width: 576px) {

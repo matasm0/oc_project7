@@ -39,7 +39,7 @@ export const addLikeDislike = createAsyncThunk('posts/addLikeDislike', async(pro
 });
 
 const initialState = {
-    state : "initial",
+    state : "unloaded",
     list : [],
     dict : {},
 

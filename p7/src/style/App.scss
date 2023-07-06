@@ -6,6 +6,12 @@
     background-color: transparent;
 }
 
+.loginHolder {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
 .main {
     @include gutters();
 
@@ -37,10 +43,11 @@
     }
     // object-fit: fill;
     // background-color: $primary;
-    min-height: 100vh;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-grow: 1;
 }
 
 .welcome {

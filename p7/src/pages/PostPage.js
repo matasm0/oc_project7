@@ -1,3 +1,5 @@
+import "../style/PostPage";
+
 import { useNavigate, useParams } from "react-router-dom";
 import { likeStatus, findUser } from "../redux/user";
 import { Form, Button, Card, Row, Col, Container } from "react-bootstrap";
@@ -10,29 +12,98 @@ import { addLikeDislikeComment } from "../redux/actions";
 
 import { readPost } from "../redux/user";
 
-// Maybe have postpage collect all of the info (user and post) and send them down to its children
-function PostPage () {
+import { PostInfo, CommentInfo } from "../redux/actions";
+
+// extradite these functions into their respective component files
+async function postComment(userId, postId, parentId, comment, token) {
+  return await fetch('http://localhost:3001/api/comments/create',
+  {
+    method : "POST",
+    headers : {
+      "Authorization" : "Bearer " + token,
+      "Content-Type" : "application/json"},
+    body : JSON.stringify({
+      'author' : userId,
+      'parent' : parentId,
+      'postParent' : postId,
+      'content' : comment,
+      'created' : Date.now(),
+    })
+  });
+}
+
+async function addCommentToUser(userId, commentId, token) {
+  return await fetch('http://localhost:3001/api/users/createComment/' + userId, {
+    method : "POST",
+    headers : {
+      "Authorization" : "Bearer " + token,
+      "Content-Type" : "application/json"
+    },
+    body : JSON.stringify({
+      commentId : commentId
+    })
+  });
+}
+
+async function editComment(commentId, content, token) {
+  return await fetch('http://localhost:3001/api/comments/edit/' + commentId,
+  {
+    method : "PUT",
+    headers : {
+      "Authorization" : "Bearer " + token,
+      "Content-Type" : "application/json"
+    },
+    body : JSON.stringify({
+      content : content
+    })
+  })
+}
+
+async function deleteComment(commentId, token) {
+  return await fetch('http://localhost:3001/api/comments/delete/' + commentId,
+  {
+    method : "DELETE",
+    headers : {
+      "Authorization" : "Bearer " + token
+    },
+  })
+}
+
+async function deletePost(postId, token) {
+  return await fetch('http://localhost:3001/api/posts/delete/' + postId,
+  {
+    method : "DELETE",
+    headers : {
+      "Authorization" : "Bearer " + token
+    },
+  });
+}
+
+async function deletePostFromUser(userId, postId, token) {
+  return await fetch('http://localhost:3001/api/users/deletePost/' + userId, {
+    method : "DELETE",
+    headers : {
+      "Authorization" : "Bearer " + token,
+      "Content-Type" : "application/json"
+    },
+    body : JSON.stringify({
+      postId : postId
+    })
+  });
+}
+
+function PostPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const { postId } =  useParams();
-  // const temp = useSelector(state => likeStatus(state, postId));
+
+  const { author, post } = PostInfo(postId);  
 
   const [comment, setComment] = useState("");
 
   const userId = useSelector(state => state.users.currentUser._id);
   const token = useSelector(state => state.users.currentUser.token);
-  
-
-  const post = useSelector(state => state.posts.current);
-  const postState = useSelector(state => state.posts.currentState);
-  const postAuthorId = useSelector(state => state.posts.current.userId);
-  
-  // Better way to do this?
-  const usersDict = useSelector(state => state.users.dict);
-  // This is stupid. Don't show anything while loading, then just pull from loaded post.
-  let author = "";
-  let postImage;
 
   // Unload post on Unmount
   useEffect(() => () => {
@@ -47,41 +118,32 @@ function PostPage () {
     dispatch(readPost({user : userId, post : postId}));
   }, []);
 
-  let postName = "";
   useEffect(() => {
-    if (postState === 'unloaded') {
+    if (post.status === 'unloaded') {
       dispatch(getPostById(postId));
     }
-  }, [dispatch, postState]);
+  }, [dispatch, post.status]);
 
-  if (postState === 'loaded') {
-    postName = post['title'];
-    author = usersDict[post.userId];
-    postImage = <img src={post.imageUrl}/>
+  const createComment = (e) => {
+    e.preventDefault();
+    postComment(userId, postId, "root", comment, token).then(
+      res => {if (res.status == 201) res.json().then(data => {
+    addCommentToUser(userId, data._id, token).then(
+      res => res.json()).then(newUser => {
+        dispatch(create(data));
+        dispatch({type : "users/updateUser", payload : newUser})
+      });
+    })})
   }
 
   const inputHandler = (e) => {
     setComment(e.target.value);
   }
 
-  const deletePost = (e) => {
-    fetch('http://localhost:3001/api/posts/delete/' + postId,
-    {
-      method : "DELETE",
-      headers : {
-        "Authorization" : "Bearer " + token
-      },
-    }).then(e => {
-      fetch('http://localhost:3001/api/users/deletePost/' + userId, {
-        method : "DELETE",
-        headers : {
-          "Authorization" : "Bearer " + token,
-          "Content-Type" : "application/json"
-        },
-        body : JSON.stringify({
-          postId : postId
-        })
-      }).then(res => res.json()).then(newUser => {
+  const deletePostButton = (e) => {
+    deletePost(postId, token).then(e => {
+    deletePostFromUser(userId, postId, token).then(
+      res => res.json()).then(newUser => {
         dispatch({type : "posts/remove", payload : postId})
         dispatch({type : "users/updateUser", payload : newUser})
         navigate("/home");
@@ -89,54 +151,48 @@ function PostPage () {
     })
   }
 
-  const postComment = (e) => {
-    e.preventDefault();
-    // Move to a dispatch
-    fetch('http://localhost:3001/api/comments/create',
-    {
-      method : "POST",
-      headers : {
-        "Authorization" : "Bearer " + token,
-        "Accept" : "application/json", 
-        "Content-Type" : "application/json"},
-      body : JSON.stringify({
-        'author' : userId,
-        'parent' : "root",
-        'postParent' : postId,
-        'content' : comment,
-        'created' : Date.now(),
-      })
-    }).then(res => {if (res.status == 201) res.json().then(data => {
-      fetch('http://localhost:3001/api/users/createComment/' + userId, {
-        method : "POST",
-        headers : {
-          "Authorization" : "Bearer " + token,
-          "Content-Type" : "application/json"
-        },
-        body : JSON.stringify({
-          commentId : data['comment']['_id']
-        })
-      }).then(res => res.json()).then(newUser => {
-        dispatch(create(data['comment']));
-        dispatch({type : "users/updateUser", payload : newUser})
-      });
-    })})
+  // We would love temporary loading objects
+  // FIX fill with temporaries
+  let postObjects = {
+    title : "",
+    author : "",
+    time : "",
+    image : "",
+    content : "",
+    commentForm : "",
+  };
+
+  // BUILDING WITH LEGOS
+  // FIX I am using temporary html elements, change to better react ones
+  if (post.status === 'loaded') {
+    postObjects.title = <h1>{post.title}</h1>;
+    postObjects.author = <h3>posted by <b>{author.email}</b></h3>;
+    postObjects.image = <img src={post.image}/>;
+    
+    postObjects.content = 
+    <div>
+      {postObjects.image}
+      <div>
+        {postObjects.title}
+        {postObjects.author}
+      </div>
+      {(author.id === userId) && <Button onClick={deletePostButton}>Delete</Button>}
+    </div>;
+
+    postObjects.commentForm = 
+    <Form onSubmit={createComment}>
+      <Form.Group>
+        <Form.Control placeholder="commment" onChange={inputHandler}></Form.Control>
+        <Form.Text></Form.Text>
+      </Form.Group>
+      <Button type="submit">Post</Button>
+    </Form>
   }
 
-  // do fetch on postID
   return (
     <>
-      {/* <img src={require("../imgs/DATBOI.jpg")} /> */}
-      {postImage}
-      <p>{postName} posted by {author ? author.email : ""}</p>
-      <Form onSubmit={postComment}>
-        <Form.Group>
-          <Form.Control placeholder="commment" onChange={inputHandler}></Form.Control>
-          <Form.Text></Form.Text>
-        </Form.Group>
-        <Button type="submit">Post</Button>
-        {(postAuthorId === userId) && <Button onClick={deletePost}>Delete</Button>}
-      </Form>
+      {postObjects.content}
+      {postObjects.commentForm}
       <Comments/>
     </>
   ); 
@@ -144,22 +200,22 @@ function PostPage () {
 
 function Comments() {
   const { postId } =  useParams();
-  const userId = useSelector(state => state.users.currentUser.id);
   const commentState = useSelector(state => state.comments.state);
   const commentsList = useSelector(state => getCommentsChildren(state, "root"));
   const dispatch = useDispatch();
+
   useEffect(() => {
-    if (commentState === "initial") {
+    if (commentState === "unloaded") {
       dispatch(getCommentsPost({postId : postId}))
     }
-  }, [commentState, dispatch, commentsList]);
+  }, [commentState, dispatch]);
 
 
   // We probably load all comments at once, so find only the comments that are root
   let commentObjects;
   if (commentState === "loaded") {
     commentObjects = commentsList.map(comment => {
-      return <Comment key={comment._id} {...{comment : comment}}/>
+      return <Comment key={comment._id} {...{commentId : comment._id}}/>
     })
   }
 
@@ -170,16 +226,20 @@ function Comments() {
   )
 }
 
+
+
 // Have a user store with a dictionary of users that contains usernames and pfps mayhaps
-function Comment({comment, _maxLevel = 1}) {
+function Comment({commentId, _maxLevel = 1}) {
   const dispatch = useDispatch();
-  
+
   const { postId } =  useParams();
+
+  // comment prop will just be id
+  const { author, comment } = CommentInfo(commentId);
+  // console.log(author, comment);
+
   const userId = useSelector(state => state.users.currentUser._id);
   const token = useSelector(state => state.users.currentUser.token);
-  const content = comment.content;
-  const authorId = comment.author;
-  const author = useSelector(state => findUser(state, authorId));
 
   const [newComment, setComment] = useState("");
 
@@ -188,29 +248,21 @@ function Comment({comment, _maxLevel = 1}) {
   }
 
   const addNewComment = (e) => {
-    fetch('http://localhost:3001/api/comments/create',
-    {
-      method: "POST",
-      headers : {
-        "Authorization" : "Bearer " + token,
-        "Accept" : "application/json",
-        "Content-Type" : "application/json"
-      },
-      body : JSON.stringify({
-        'author' : userId,
-        'parent' : comment._id,
-        'postParent' : postId,
-        'content' : newComment,
-        'created' : Date.now(),
-      })
-    }).then(res => {if (res.status == 201) res.json().then(data => {
-      dispatch(create(data['comment']));
+    postComment(userId, postId, commentId, newComment, token).then(
+      res => {if (res.status == 201) res.json().then(data => {
+    addCommentToUser(userId, commentId, token).then(
+      res => res.json()).then(newUser => {
+        dispatch(create(data));
+        dispatch({type : "users/updateUser", payload : newUser});
+      });
     })})
   }
 
+  // ADD GUARDS
+
   // maxLevel for how many levels of comments to get. 0 means just the comment itself. 2 is default
   // Pull 5 comments per level
-  const childrenList = useSelector(state => getCommentsChildren(state, comment._id));
+  const childrenList = comment ? comment.children : [];
   let childrenObjects = [];
 
   const [numShownComments, setNumComments] = useState(_maxLevel == 0 ? 0 : Math.min(childrenList.length, 5));
@@ -232,30 +284,16 @@ function Comment({comment, _maxLevel = 1}) {
     expandButton = <Button onClick={expandComments}>More Comments</Button>
   }
 
-  const editComment = (e) => {
-    fetch('http://localhost:3001/api/comments/edit/' + comment._id,
-    {
-      method : "PUT",
-      headers : {
-        "Authorization" : "Bearer " + token,
-        "Content-Type" : "application/json"
-      },
-      body : JSON.stringify({
-        content : "deez"
-      })
-    }).then(res => res.json()).then(data => {
+  const editCommentButton = (e) => {
+    // Rearistickly I should be updating user as well... some latency shouldn't be too bad
+    editComment(commentId, "edited", token).then(res => res.json()).then(data => {
       dispatch({type : "comments/update", payload : data})
     })
   }
 
-  const deleteComment = (e) => {
-    fetch('http://localhost:3001/api/comments/delete/' + comment._id,
-    {
-      method : "DELETE",
-      headers : {
-        "Authorization" : "Bearer " + token
-      },
-    }).then(res => res.json()).then(data => {
+  const deleteCommentButton = (e) => {
+    // Latency is a little less acceptable here... oh well
+    deleteComment(commentId, token).then(res => res.json()).then(data => {
       dispatch ({type : "comments/update", payload : data});
     });
   }
@@ -266,41 +304,56 @@ function Comment({comment, _maxLevel = 1}) {
       _id : userId
     },
     {
-      _id : comment._id
+      _id : commentId
     },
     likeStatus
     ))
   }
 
+  let commentObjects = {
+    author : "",
+    content : "",
+    time : "",
+    commentForm : "",
+    body : "",
+  }
+
+  if (comment.status === 'loaded') {
+    commentObjects.author = <Card.Header>{author.email}</Card.Header>
+
+    commentObjects.content = 
+    <Card.Body>
+      <Card.Text>{comment.content}</Card.Text>
+    </Card.Body>
+
+    commentObjects.commentForm =
+    <Form.Group>
+      <Form.Control placeholder="Add a comment" onChange={inputHandler}></Form.Control>
+      <Form.Text></Form.Text>
+      <Button onClick={addNewComment}>E</Button>
+    </Form.Group>
+
+    commentObjects.body = 
+    <Card>
+      {commentObjects.author}
+      {commentObjects.content}
+      <Card.Footer>
+        {commentObjects.commentForm}
+        {(author.id == userId) && 
+        <>
+          <Button onClick={editCommentButton}>Edit</Button>
+          <Button onClick={deleteCommentButton}>Delete</Button>
+        </>}
+        <Button value={"like"} onClick={likeDislike}>Like</Button>
+        <Button value={"dislike"} onClick={likeDislike}>Dislike</Button>
+        {expandButton}
+      </Card.Footer>
+    </Card>
+  }
+
   return (
     <Container>
-      <Card>
-        <Card.Header>Author: {author ? author.email : ""}</Card.Header>
-        <Card.Body>
-          <Card.Text>
-            {content}
-          </Card.Text>
-        </Card.Body>
-        <Card.Footer>
-          <Form>
-            <Row>
-              <Col> 
-                <Form.Control placeholder="Add a comment" onChange={inputHandler}></Form.Control>
-                <Form.Text></Form.Text>
-              </Col>
-              {(author && author._id == userId) && <>
-                <Col><Button onClick={editComment}>Edit</Button></Col>
-                <Col><Button onClick={deleteComment}>Delete</Button></Col>
-                </>
-              }
-              <Col><Button onClick={addNewComment}>E</Button></Col>
-              <Col><Button value={"like"} onClick={likeDislike}>Like</Button></Col>
-              <Col><Button value={"dislike"} onClick={likeDislike}>Dislike</Button></Col>
-              {expandButton}
-            </Row>
-          </Form>
-        </Card.Footer>
-      </Card>
+      {commentObjects.body}
       {childrenObjects}
     </Container>
   )

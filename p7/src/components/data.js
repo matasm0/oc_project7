@@ -32,7 +32,7 @@ export default function Data () {
     const usersDict = useSelector(state => state.users.dict);
     
     useEffect (() => {
-        if (userStatus === "initial") {
+        if (userStatus === "unloaded") {
             dispatch(getUsers());
         }
     }, [dispatch, userStatus])

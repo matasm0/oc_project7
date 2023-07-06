@@ -1,17 +1,40 @@
 @import "./custom.scss";
 
+body {
+    min-height: 100vh;
+}
+
+// #root {
+//     // min-height: 100vh;
+//     display: flex;
+//     width: 100vw;
+//     max-width: 100vw;
+//     min-height: 100vh;
+// }
+
 .home-body {
-    position: relative;
     background-color: $secondary;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    width: 100vw;
+    max-width: 100vw;
+    min-height: 100vh;
+
+    .uploadButton {
+        position: static;
+        right: 5vw;
+        bottom: 5vw;
+    }
 }
 
 .home {
     @include gutters();
     display: flex;
 
-    min-height: 100vh;
-
-    padding: 50px 0;
+    
 
     background-color: $secondary;
 
@@ -19,7 +42,6 @@
         margin: 0;
         width: 20%;
         height: auto;
-        border: 2px solid black;
     }
 
     .home-main {
@@ -27,11 +49,11 @@
         padding: 0;
         width: 100%;
         height: auto;
-        border: 2px solid green;
         background-color: $secondary;
 
         display: flex;
         flex-direction: column;
+        position: relative;
 
         .home-navs {
             display: flex;
@@ -43,7 +65,9 @@
         }
 
         .home-posts {
-            background-color: $four;
+            background-color: $secondary;
+
+            padding : 50px;
 
             display: flex;
             flex-direction: row;
@@ -51,11 +75,58 @@
             align-items: center;
             justify-content: center;
 
-            column-gap: 40px;
+            column-gap: 70px;
             row-gap: 40px;
 
-            &>* {
-                width: 450px;
+            // &>* {
+            //     width: 450px;
+            // }
+            
+
+            .post {
+                width: 640px;
+
+                border: 7px solid $primary;
+                border-radius: 20px;
+
+                background-color: $tertiary;
+                padding : 20px;
+
+                .post-img {
+                    min-height: 400px;
+                    max-height: 550px;
+
+                    background-color: $four;
+                    object-fit: contain;
+                }
+                .post-body {
+                    .row {
+                        display: flex;
+                        justify-content: space-between;
+
+                        .card-text {
+                            flex-grow: 1;
+                            padding-bottom: 20px;
+                        }
+
+                        .likeDislike {
+                            display: flex;
+                            gap: 20px;
+
+                            .btn {
+                                width: 50%;
+                                height: 50px;
+                                padding: 0;
+
+                                color: black;
+
+                                border-radius: 20px;
+                                border: 4px solid black;
+                                background-color: $tertiary;
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -21,16 +21,163 @@ export const addLikeDislikeComment = (user, comment, likeStatus) => {
     }
 }
 
+// Returns all of the relevant information that a component rendering a post will use
 export const PostInfo = (postId) => {
-    // What need? status, Author name, id, pfp if add
-    // Post title, image, 
-    return useSelector(state => state.posts.current.userId);
+    let toReturn = {
+        author : {
+            status : "unloaded",
+            name : "",
+            id : "",
+        },
+        post : {
+            status : "unloaded",
+            title : "",
+            id : postId,
+            image : "",
+            likes : -1,
+            dislikes : -1,
+            created : -1,
+        },
+    }
+
+    let post = {}, author = {};
+
+    // Check if the post we want is the current post. If so, use it as it is the most up to date
+    const currentStatus = useSelector(state => state.posts.currentState);
+    const current = useSelector(state => state.posts.current);
+
+    const postStatus = useSelector(state => state.posts.state);
+    const postsDict = useSelector(state => state.posts.dict); // Make a selector
+
+    const usersStatus = useSelector(state => state.users.status);
+    const usersDict = useSelector(state => state.users.dict);
+
+    // Need an elegant way to throw and catch errors
+    if (postId == undefined) {
+        return "YOU NEED TO PASS IN AN ID MAN";
+    }
+    
+    // Haha! This needs to be an if if not if else if
+    if (currentStatus === 'loaded') {
+        if (current._id == postId)
+            post = current;
+            toReturn.post.status = "loaded";
+    }
+
+    // Else pull it out of the post dict
+    else if (postStatus === 'loaded') {
+        if (postId in postsDict) {
+            post = postsDict[postId];
+            toReturn.post.status = "loaded";
+        }
+        else {
+            // Post was not found. Return and let caller handle
+            toReturn.post.status = "missing";
+            return toReturn;
+        }
+    }
+
+    // Neither currentpost nor post dict loaded, return to be dispatched
+    else return toReturn;
+
+    // Could check for deleted and such here, leaving it to caller
+    toReturn.post.title = post.title;
+    toReturn.post.image = post.imageUrl;
+    toReturn.post.likes = post.likes;
+    toReturn.post.dislikes = post.dislikes;
+
+    
+    // Userslist is not loaded
+    if (usersStatus === "unloaded") {
+        return toReturn;
+    }
+
+    if (post.userId in usersDict) {
+        toReturn.author.status = "loaded";
+        author = usersDict[post.userId];
+    }
+    else {
+        toReturn.author.status = "missing";
+        return toReturn;
+    }
+
+    toReturn.author.id = author._id;
+    toReturn.author.email = author.email;
+
+    return toReturn;
 }
 
 export const CommentInfo = (commentId) => {
+    let toReturn = {
+        author : {
+            status : "unloaded",
+            name : "",
+            id : "",
+        },
+        comment : {
+            status : "unloaded",
+            content : "",
+            id : commentId,
+            likes : -1,
+            dislikes : -1,
+            children : [],
+            parent : "",
+            created : -1,
+        }
+    }
 
+    let comment = {}, author = {};
+
+    const commentsStatus = useSelector(state => state.comments.state);
+    const commentsDict = useSelector(state => state.comments.dict);
+    
+
+    const usersStatus = useSelector(state => state.users.status);
+    const usersDict = useSelector(state => state.users.dict);
+
+    if (commentId == undefined) {
+        return "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    }
+
+    if (commentsStatus == 'loaded') {
+        if (commentId in commentsDict) {
+            comment = commentsDict[commentId]
+            toReturn.comment.status = "loaded";
+        }
+        else {
+            toReturn.comment.status = "missing";
+            return toReturn;
+        }
+    }
+
+    else return toReturn;
+
+    toReturn.comment.content = comment.content;
+    toReturn.comment.likes = comment.likes;
+    toReturn.comment.dislikes = comment.dislikes;
+    toReturn.comment.children = comment.children;
+    toReturn.comment.parent = comment.parent;
+
+    if (usersStatus === "unloaded") {
+        return toReturn;
+    }
+
+    if (comment.author in usersDict) {
+        toReturn.author.status = "loaded";
+        author = usersDict[comment.author];
+    }
+    else {
+        toReturn.author.status = "missing";
+        return toReturn;
+    }
+
+    toReturn.author.id = author._id;
+    toReturn.author.email = author.email;
+
+    return toReturn;
 }
 
-export const UserInfo = (postId) => {
+// if userId is "current", return current user
+export const UserInfo = (userId) => {
 
 }

@@ -21,9 +21,9 @@ async function postComment(req, res, next) {
         return res.status(401).json({message : "Failed to add comment", e})
     }
 
-    let newCommentObject = await newComment.save();
+    let newCommentObject = (await newComment.save())['_doc'];
 
-    res.status(201).json({message : "Posted", comment : newCommentObject});
+    res.status(201).json({...newCommentObject});
 }
 
 exports.postComment = postComment;

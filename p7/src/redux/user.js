@@ -6,6 +6,10 @@ export const getUsers = createAsyncThunk("users/getUsers", async () => {
     return data['usersList'];
 });
 
+
+// We will not check when these async functions fail because 1, it is hard to do with how I coded it, and 
+// 2, we catch the failure in the post/comment/whereever else. If those fail, this should fail too. If one
+// fails but the other doesn't, the effect is limited to a couple of like/dislike counts being off.
 export const addLikeDislikePost = createAsyncThunk("users/addLikeDislikePost", async (props) => {
     const {user, post, likeStatus} = props;
     const res = await fetch('http://localhost:3001/api/users/likePost/' + user, {
@@ -69,7 +73,7 @@ const initialState = {
         // likedPosts : [],
         // dislikedPosts : [],
     },
-    status : "initial",
+    status : "unloaded",
     dict : {}
 }
 
