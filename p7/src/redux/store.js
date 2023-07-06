@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
-import postsReducer from "./redux/post";
-import usersReducer from "./redux/user";
-import commentsReducer from "./redux/comment";
+import postsReducer from "./post";
+import usersReducer from "./user";
+import commentsReducer from "./comment";
 
 const store = configureStore({
     reducer: {

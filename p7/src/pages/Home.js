@@ -1,4 +1,4 @@
-import "../Home.scss";
+import "../style/Home.scss";
 
 import { Link } from "react-router-dom"
 import { Header, Footer } from "../components/basic";
@@ -20,19 +20,22 @@ import { addLikeDislikePost } from "../redux/actions";
 // Idea : Make posts into their own little component thingy, then home/postpage can take that info
 // and present it how they need to, instead of both of them needing to go to the store. Or is that the same thing. Idk
 
+// Yes, but I think most important is just that functionality is shared between them. So for example, the likeDislike 
+// thingy should be the same function between both.
+
 function Home() {
     return (
         <div className="home-body">
             <Header />
             <Container className="home">
-                <Container className="home-sidebar">
+                {/* <Container className="home-sidebar">
                     <ul>
                         <li><Link to="/login">Login</Link></li>
                         <li><Link to="/login">Login</Link></li>
                         <li><Link to="/login">Login</Link></li>
                         <li><Link to="/login">Login</Link></li>
                     </ul>
-                </Container>
+                </Container> */}
                 <Container className="home-main">
                     <Container className="home-navs">
                         <Tabs style={{ justifySelf: "flex-start" }} className="home-tabs">
@@ -45,10 +48,6 @@ function Home() {
                         </Link>
                     </Container>
                     <Container className="home-posts">
-                        {/* <PostObject />
-                        <PostObject />
-                        <PostObject />
-                        <PostObject /> */}
                         <PostList/>
                     </Container>
                 </Container>
@@ -58,6 +57,8 @@ function Home() {
     )
 }
 
+// getPosts should be getPostIds or something and only return ids. PostObject will then call the getPostInfo
+// action which will give it all of the information that it needs
 function PostList() {
     // const postsList = useSelector(state => state.posts.list);
     const postsList = useSelector(state => getPosts(state));

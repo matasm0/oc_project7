@@ -36,16 +36,7 @@ export const addLikeDislike = createAsyncThunk('posts/addLikeDislike', async(pro
     })
     const data = await res.json();
     return data;
-})
-
-// export const getPostLikeStatus = ()
-
-// export const createPost = createAsyncThunk('posts/createPost', async () => {
-//     const res = await fetch('http://localhost:3001/api/posts/create');
-//     const data = await res.json();
-//     console.log(data);
-//     return data['post']
-// })
+});
 
 const initialState = {
     state : "initial",
@@ -60,7 +51,8 @@ const postSlice = createSlice({
     name: "posts",
     initialState,
     reducers: { // These need to be run after the async call to actually update posts in the database
-        create: (state, action) => {
+        createPost: (state, action) => {
+            console.log(action.payload)
             state.list = state.list.concat(action.payload);
             state.dict[action.payload._id] = action.payload;
         },
@@ -68,7 +60,7 @@ const postSlice = createSlice({
             console.log("Update post"); 
         },
         remove: (state, action) => {
-            console.log("Remove post");
+            delete state.dict[action.payload];
         },
         unload: (state, action) => {
             state.current = {};
@@ -105,6 +97,6 @@ const postSlice = createSlice({
     }
 })
 
-export const { create, update, remove } = postSlice.actions;
+export const { createPost, update, remove } = postSlice.actions;
 
 export default postSlice.reducer;

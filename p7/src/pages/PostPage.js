@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { likeStatus, findUser } from "../redux/user";
 import { Form, Button, Card, Row, Col, Container } from "react-bootstrap";
 import { useEffect, useState } from "react";
@@ -6,10 +6,15 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { getCommentsPost, getCommentsChildren, create } from "../redux/comment";
 import { getPostById } from "../redux/post";
+import { addLikeDislikeComment } from "../redux/actions";
+
+import { readPost } from "../redux/user";
 
 // Maybe have postpage collect all of the info (user and post) and send them down to its children
-
 function PostPage () {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const { postId } =  useParams();
   // const temp = useSelector(state => likeStatus(state, postId));
 
@@ -17,7 +22,7 @@ function PostPage () {
 
   const userId = useSelector(state => state.users.currentUser._id);
   const token = useSelector(state => state.users.currentUser.token);
-  const dispatch = useDispatch();
+  
 
   const post = useSelector(state => state.posts.current);
   const postState = useSelector(state => state.posts.currentState);
@@ -35,6 +40,13 @@ function PostPage () {
     dispatch({type : "comments/unload"});
   }, []);
 
+  // Add post to read on mount
+  // IF THE POST HAS BEEN READ DO NOT RUN THIS. THAT IS STUPID
+  // I think that means we have to run this when the post loads.
+  useEffect(() => {
+    dispatch(readPost({user : userId, post : postId}));
+  }, []);
+
   let postName = "";
   useEffect(() => {
     if (postState === 'unloaded') {
@@ -47,17 +59,10 @@ function PostPage () {
     author = usersDict[post.userId];
     postImage = <img src={post.imageUrl}/>
   }
-  
-  console.log(postAuthorId);
-  
 
   const inputHandler = (e) => {
     setComment(e.target.value);
   }
-  
-  // fetch('http://localhost:3001/api/posts/comments/649468bbcb5e0580a694f648').then(res => res.json()).then(
-  //   data => {console.log(data);}
-  // )
 
   const deletePost = (e) => {
     fetch('http://localhost:3001/api/posts/delete/' + postId,
@@ -66,9 +71,21 @@ function PostPage () {
       headers : {
         "Authorization" : "Bearer " + token
       },
-      body : JSON.stringify(
-        post
-      )
+    }).then(e => {
+      fetch('http://localhost:3001/api/users/deletePost/' + userId, {
+        method : "DELETE",
+        headers : {
+          "Authorization" : "Bearer " + token,
+          "Content-Type" : "application/json"
+        },
+        body : JSON.stringify({
+          postId : postId
+        })
+      }).then(res => res.json()).then(newUser => {
+        dispatch({type : "posts/remove", payload : postId})
+        dispatch({type : "users/updateUser", payload : newUser})
+        navigate("/home");
+      })
     })
   }
 
@@ -86,14 +103,26 @@ function PostPage () {
         'author' : userId,
         'parent' : "root",
         'postParent' : postId,
-        'content' : comment
+        'content' : comment,
+        'created' : Date.now(),
       })
     }).then(res => {if (res.status == 201) res.json().then(data => {
-      dispatch(create(data));
+      fetch('http://localhost:3001/api/users/createComment/' + userId, {
+        method : "POST",
+        headers : {
+          "Authorization" : "Bearer " + token,
+          "Content-Type" : "application/json"
+        },
+        body : JSON.stringify({
+          commentId : data['comment']['_id']
+        })
+      }).then(res => res.json()).then(newUser => {
+        dispatch(create(data['comment']));
+        dispatch({type : "users/updateUser", payload : newUser})
+      });
     })})
   }
 
-  // useEffect(() => {})
   // do fetch on postID
   return (
     <>
@@ -143,12 +172,14 @@ function Comments() {
 
 // Have a user store with a dictionary of users that contains usernames and pfps mayhaps
 function Comment({comment, _maxLevel = 1}) {
-  const { postId } =  useParams();
-  const userId = useSelector(state => state.users.currentUser.id);
-  const token = useSelector(state => state.users.currentUser.token);
-  const user = useSelector(state => findUser(state, userId));
   const dispatch = useDispatch();
+  
+  const { postId } =  useParams();
+  const userId = useSelector(state => state.users.currentUser._id);
+  const token = useSelector(state => state.users.currentUser.token);
   const content = comment.content;
+  const authorId = comment.author;
+  const author = useSelector(state => findUser(state, authorId));
 
   const [newComment, setComment] = useState("");
 
@@ -169,10 +200,11 @@ function Comment({comment, _maxLevel = 1}) {
         'author' : userId,
         'parent' : comment._id,
         'postParent' : postId,
-        'content' : newComment
+        'content' : newComment,
+        'created' : Date.now(),
       })
     }).then(res => {if (res.status == 201) res.json().then(data => {
-      dispatch(create(data));
+      dispatch(create(data['comment']));
     })})
   }
 
@@ -200,10 +232,50 @@ function Comment({comment, _maxLevel = 1}) {
     expandButton = <Button onClick={expandComments}>More Comments</Button>
   }
 
+  const editComment = (e) => {
+    fetch('http://localhost:3001/api/comments/edit/' + comment._id,
+    {
+      method : "PUT",
+      headers : {
+        "Authorization" : "Bearer " + token,
+        "Content-Type" : "application/json"
+      },
+      body : JSON.stringify({
+        content : "deez"
+      })
+    }).then(res => res.json()).then(data => {
+      dispatch({type : "comments/update", payload : data})
+    })
+  }
+
+  const deleteComment = (e) => {
+    fetch('http://localhost:3001/api/comments/delete/' + comment._id,
+    {
+      method : "DELETE",
+      headers : {
+        "Authorization" : "Bearer " + token
+      },
+    }).then(res => res.json()).then(data => {
+      dispatch ({type : "comments/update", payload : data});
+    });
+  }
+
+  const likeDislike = (e) => {
+    let likeStatus = e.target.value == 'like' ? 1 : -1;
+    dispatch(addLikeDislikeComment({
+      _id : userId
+    },
+    {
+      _id : comment._id
+    },
+    likeStatus
+    ))
+  }
+
   return (
     <Container>
       <Card>
-        <Card.Header>Author: {user ? user.email : ""}</Card.Header>
+        <Card.Header>Author: {author ? author.email : ""}</Card.Header>
         <Card.Body>
           <Card.Text>
             {content}
@@ -216,7 +288,14 @@ function Comment({comment, _maxLevel = 1}) {
                 <Form.Control placeholder="Add a comment" onChange={inputHandler}></Form.Control>
                 <Form.Text></Form.Text>
               </Col>
+              {(author && author._id == userId) && <>
+                <Col><Button onClick={editComment}>Edit</Button></Col>
+                <Col><Button onClick={deleteComment}>Delete</Button></Col>
+                </>
+              }
               <Col><Button onClick={addNewComment}>E</Button></Col>
+              <Col><Button value={"like"} onClick={likeDislike}>Like</Button></Col>
+              <Col><Button value={"dislike"} onClick={likeDislike}>Dislike</Button></Col>
               {expandButton}
             </Row>
           </Form>

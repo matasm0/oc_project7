@@ -1,7 +1,8 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
 
-import { getUsers } from "./redux/user";
+
+import { getUsers } from "../redux/user";
 
 // Split into multiple components?
 export default function Data () {

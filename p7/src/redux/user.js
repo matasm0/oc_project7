@@ -4,9 +4,9 @@ export const getUsers = createAsyncThunk("users/getUsers", async () => {
     const res = await fetch('http://localhost:3001/api/users/get');
     const data = await res.json();
     return data['usersList'];
-})
+});
 
-export const addLikeDislikePost = createAsyncThunk("users/addLikeDislike", async (props) => {
+export const addLikeDislikePost = createAsyncThunk("users/addLikeDislikePost", async (props) => {
     const {user, post, likeStatus} = props;
     const res = await fetch('http://localhost:3001/api/users/likePost/' + user, {
         method : "POST",
@@ -18,6 +18,40 @@ export const addLikeDislikePost = createAsyncThunk("users/addLikeDislike", async
         body : JSON.stringify({
             postId : post,
             likeStatus : likeStatus,
+        })
+    })
+    const data = await res.json();
+    return data;
+});
+
+export const addLikeDislikeComment = createAsyncThunk("users/addLikeDislikeComment", async (props) => {
+    const {user, comment, likeStatus} = props;
+    const res = await fetch('http://localhost:3001/api/users/likeComment/' + user, 
+    {
+        method : "POST",
+        headers : {
+            "Content-Type" : "application/json"
+        },
+        body : JSON.stringify({
+            commentId : comment,
+            likeStatus : likeStatus
+        })
+    })
+    const data = await res.json()
+    return data;
+})
+
+export const readPost = createAsyncThunk("users/readPost", async (props) =>{
+    const {user, post} = props;
+    const res = await fetch('http://localhost:3001/api/users/readPost/' + user,
+    {
+        method : "POST",
+        headers : {
+            // Authorization
+            "Content-Type" : "application/json"
+        },
+        body : JSON.stringify ({
+            postId : post
         })
     })
     const data = await res.json();
@@ -39,13 +73,12 @@ const initialState = {
     dict : {}
 }
 
+
+// Any time we update currentUser, we need to update that user in the dict as well
 const userSlice = createSlice({
     name: "users",
     initialState,
     reducers: {
-        default: (state, action) => {
-            return state;
-        },
         login: (state, action) => {
             state.currentUser = {...action.payload};
             state.currentUser.loggedIn = true;
@@ -56,7 +89,10 @@ const userSlice = createSlice({
         logout: (state, action) => {
             localStorage.removeItem("user");
             state.currentUser = {loggedIn : false};
-        }
+        },
+        updateUser: (state, action) => {
+            state.currentUser = {...state.currentUser, ...action.payload};
+        },
     },
     extraReducers(builder) {
         builder
@@ -72,6 +108,9 @@ const userSlice = createSlice({
             .addCase(addLikeDislikePost.fulfilled, (state, action) => {
                 state.currentUser = {...state.currentUser, ...action.payload}
             })
+            .addCase(readPost.fulfilled, (state, action) => {
+                state.currentUser = {...state.currentUser, ...action.payload}
+            })
     }
 })
 
@@ -85,5 +124,5 @@ export const findUser = (state, userId) => {
     return state.users.dict[userId]
 }
 
-export const { login, logout } = userSlice.actions;
+export const { login, logout, updateUser } = userSlice.actions;
 export default userSlice.reducer;

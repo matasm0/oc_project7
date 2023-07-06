@@ -1,6 +1,6 @@
 // import './App.css';
 // import 'bootstrap/dist/css/bootstrap.min.css';
-import "../App.scss";
+import "../style/App.scss";
 
 // import { Button, Alert, Breadcrumb, Card, Form, Container, Row, Col } from 'react-bootstrap';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';

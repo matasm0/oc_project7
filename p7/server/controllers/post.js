@@ -45,7 +45,14 @@ exports.getPostId = async (req, res, next) => {
 exports.deletePost = async (req, res, next) => {
     // Check userid
     // Post.deleteOne({_id : req.params['id']});
-    let post = {...req.body, userId : "deleted", title : "deleted", likes : -1, dislikes : -1, imageUrl : ""}
+    let post = {
+        userId : "deleted",
+        title : "deleted",
+        likes : -1,
+        dislikes : -1,
+        imageUrl : ""
+        // Do we need to clear likedUsers and such?
+    }
     await Post.updateOne({_id : req.params['id']}, post);
     return res.status(200).json({message : "Post Deleted"});
 }

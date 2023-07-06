@@ -22,9 +22,9 @@ import Home from "./pages/Home";
 import PostPage from "./pages/PostPage";
 import Entry from "./pages/Login";
 import Upload from "./pages/Upload";
-import Data from "./data";
+import Data from "./components/data";
 
-import store from "./store";
+import store from "./redux/store";
 import { Provider } from "react-redux";
 
 export default function App() {

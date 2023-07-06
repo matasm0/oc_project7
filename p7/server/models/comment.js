@@ -11,6 +11,7 @@ const commentSchema = mongoose.Schema({
     parent : {type : String, required : true},
     postParent : {type : String, required : true},
     children : {type : [String], required : true},
+    created : {type : Number, required : true},
 })
 
 module.exports = mongoose.model("Comment", commentSchema, collection="comments")

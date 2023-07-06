@@ -1,6 +1,6 @@
 @import "./custom.scss";
 @import "~bootstrap/scss/bootstrap";
-@import "./components/basic.scss";
+@import "./basic.scss";
 
 .tp {
     background-color: transparent;
@@ -27,11 +27,11 @@
 }
 
 .body {
-    background: url("./imgs/alena-aenami-eclipse-1k.jpg");
+    background: url("../imgs/alena-aenami-eclipse-1k.jpg");
     background-size: cover;
     background-position: 50% 20%;
     @media (max-width: 1000px) {
-        background: url("./imgs/illust_76220766_20210617_123125.png") no-repeat; 
+        background: url("../imgs/illust_76220766_20210617_123125.png") no-repeat; 
         background-size: cover;
         background-position: 50% 60%;
     }

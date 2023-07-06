@@ -87,13 +87,11 @@ exports.getUsers = async (req, res, next) => {
     return res.status(200).json({usersList : toReturn});
 }
 
-
+// Combine post and comment into one, just check which in here
 exports.addLikeDislikePost = async (req, res, next) => {
     let user = (await User.findOne({_id : req.params['id']}))['_doc'];
     const postId = req.body.postId;
 
-    delete user['__v'];
-    delete user['password'];
     let tempIndex;
 
     switch (req.body.likeStatus) {
@@ -129,5 +127,127 @@ exports.addLikeDislikePost = async (req, res, next) => {
 
     await User.updateOne({_id : req.params['id']}, user);
 
-    return res.status(200).json({...user})
+    delete user['__v'];
+    delete user['password'];
+
+    return res.status(200).json({...user});
+}
+
+exports.addLikeDislikeComment = async (req, res, next) => {
+    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    const commentId = req.body.commentId;
+
+    let tempIndex;
+
+    switch (req.body.likeStatus) {
+        case 1:
+            // User already liked, unlike
+            if ((tempIndex = user.likedComments.indexOf(commentId)) != -1) {
+                user.likedComments.splice(tempIndex, 1);
+            }
+            // Like
+            else {
+                // User disliked, undo and like
+                if ((tempIndex = user.dislikedComments.indexOf(commentId)) != -1) {
+                    user.dislikedComments.splice(tempIndex, 1);
+                }
+                user.likedComments.push(commentId);
+            }
+            break;
+        case -1:
+            // User already dislikes, undislike
+            if ((tempIndex = user.dislikedComments.indexOf(commentId)) != -1) {
+                user.dislikedComments.splice(tempIndex, 1);
+            }
+            // Dislike
+            else {
+                // User liked, undo and dislike
+                if ((tempIndex = user.likedComments.indexOf(commentId)) != -1) {
+                    user.likedComments.splice(tempIndex, 1);
+                }
+                user.dislikedComments.push(commentId);
+            }
+            break;
+    }
+
+    await User.updateOne({_id : req.params['id']}, user);
+
+    delete user['__v'];
+    delete user['password'];
+
+    return res.status(200).json({...user});
+}
+
+exports.createPost = async (req, res, next) => {
+    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    const postId = req.body.postId;
+
+    user.posts.push(postId);
+
+    await User.updateOne({_id : req.params['id'], user});
+
+    delete user['__v'];
+    delete user['password'];
+
+    return res.status(200).json({...user});
+}
+
+exports.createComment = async (req, res, next) => {
+    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    const commentId = req.body.commentId;
+
+    user.comments.push(commentId);
+
+    await User.updateOne({_id : req.params['id'], user});
+
+    delete user['__v'];
+    delete user['password'];
+
+    return res.status(200).json({...user});
+}
+
+exports.deletePost = async (req, res, next) => {
+    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    const postId = req.body.postId;
+
+    const tempIndex = user.posts.indexOf(postId);
+    user.posts.splice(tempIndex, 1);
+
+    await User.updateOne({_id : req.params['id'], user});
+
+    delete user['__v'];
+    delete user['password'];
+
+    return res.status(200).json({...user});
+}
+
+exports.deleteComment = async (req, res, next) => {
+    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    const commentId = req.body.commentId;
+
+    const tempIndex = user.comments.indexOf(commentId);
+    user.comments.splice(tempIndex, 1);
+
+    await User.updateOne({_id : req.params['id'], user});
+
+    delete user['__v'];
+    delete user['password'];
+
+    return res.status(200).json({...user});
+}
+
+exports.readPost = async (req, res, next) => {
+    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    const postId = req.body.postId;
+
+    if (user.readPosts.indexOf(postId) == -1) {
+        user.readPosts.push(postId);
+    }
+
+    await User.updateOne({_id : req.params['id']}, user);
+
+    delete user['__v'];
+    delete user['password'];
+
+    return res.status(200).json({...user});
 }

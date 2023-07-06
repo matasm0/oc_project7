@@ -10,6 +10,7 @@ const userSchema = mongoose.Schema({
     comments : {type : [String], required : true},
     likedComments : {type : [String], required : true},
     dislikedComments : {type : [String], required : true},
+    readPosts : {type : [String], required : true},
     // friends, pfp, username
 })
 
