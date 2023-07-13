@@ -1,0 +1,96 @@
+@import './custom.scss';
+
+.post-page {
+    width: 100vw;
+    max-width: 100vw;
+    min-height: 100vh;
+
+    background-color: $secondary;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .post-body {
+        @include gutters();
+
+        min-height: calc(100vh - 116px);
+        padding-top: 20px;
+        padding-bottom: 20px;
+
+        background-color: $tertiary;
+
+        .post-img {
+            width: 100%;
+        }
+
+        .author-info {
+            display: flex;
+
+            .pfp {
+                width: 35px;
+                height: 35px;
+
+                margin: 2px 5px 0 9px;
+            }
+        }
+    }
+}
+
+.comments {
+
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .container.thread-parent {
+        // border: 2px solid black;
+        border-radius: 20px;
+        // overflow: hidden;
+        padding: 0;
+    }
+
+    .thread-children {
+
+        position: relative;
+
+        display: flex;
+        flex-direction: column;
+
+        &::before {
+            content: "";
+
+            position: absolute;
+            top: -18px;
+
+            border: 1px solid black;
+            width: 1px;
+            height: calc(100% - 2px);
+            margin-left: 25px;
+        }
+    }
+
+    .comment {
+        padding-left: 50px;
+    }
+
+    .comment > .card {
+        margin-bottom: 20px;
+
+        &>* {
+            background-color: $tertiary;
+            border: none;
+        }
+
+        .comment-header {
+            display: flex;
+
+            .pfp {
+                width: 30px;
+                height: 30px;
+                margin-right: 7px;
+                margin-top: -2px;
+            }
+        }
+    }
+}

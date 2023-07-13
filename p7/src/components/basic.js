@@ -1,9 +1,13 @@
-import { Navbar, Nav, Container, Form } from 'react-bootstrap';
+import { Navbar, Nav, Container, Form, Image } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 
+import { useSelector } from 'react-redux';
+
 export function Header({currentPage}) {
+  const pfp = useSelector(state => state.users.currentUser.pfp);
+  const userId = useSelector(state=>state.users.currentUser._id);
   
-  const logo = <Navbar.Brand className='basic-link'><Link to={'/'}>Test</Link></Navbar.Brand>;
+  const logo = <Navbar.Brand className='basic-link'><Link to={'/home'}>Test</Link></Navbar.Brand>;
 
   let body = "";
 
@@ -16,7 +20,12 @@ export function Header({currentPage}) {
             <Form.Control placeholder='Search'></Form.Control>
             <Form.Text></Form.Text>
           </Form>
-          <Link to={"/upload"}>Upload</Link>
+          <div className='rhs'>
+            <Link to={"/upload"}>Upload</Link>
+            <Link to={userId ? "/user/" + userId : ""}>
+              <Image src={pfp ? pfp : require("../imgs/pfp.png")} className='pfp' roundedCircle/>
+            </Link>
+          </div>
         </Container>
       break;
     default:

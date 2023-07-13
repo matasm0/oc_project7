@@ -1,10 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-
-
-export const getCommentsPost = createAsyncThunk('comments/getCommentsPost', async (post) => {
-    const postId = post['postId'];
-    const res = await fetch(`http://localhost:3001/api/posts/comments/${postId}`);
+export const getComments = createAsyncThunk('comments/getComments', async () => {
+    const res = await fetch('http://localhost:3001/api/comments/get');
     const data = await res.json();
     return data['comments'];
 });
@@ -30,7 +27,9 @@ export const addLikeDislike = createAsyncThunk('comments/addLikeDislike', async 
 const initialState = {
     state: "unloaded",
     list: [], // Maybe pull and clear with each post?
-    dict: {}
+    dict: {},
+    currPost: [],
+    currPostStatus: "unloaded",
 };
 
 const commentSlice = createSlice({
@@ -53,21 +52,23 @@ const commentSlice = createSlice({
             state.dict[action.payload._id] = {...state.dict[action.payload._id], ...action.payload};
             state.list = Object.values(state.dict);
         },
-        unload(state, action) {
-            return initialState;
-            // state.state = "initial";
-            // state.dict = {};
-            // state.list = [];
+        unload(state) {
+            state.currPost = [];
+            state.currPostStatus = "unloaded";
+        },
+        getCommentsPost(state, action) {
+            state.currPost = state.list.filter(comment => comment.postParent == action.payload);
+            state.currPostStatus = "loaded";
         }
     },
     extraReducers(builder) {
         builder
-            .addCase(getCommentsPost.pending, (state, action) => {
+            .addCase(getComments.pending, (state, action) => {
                 state.state = "loading";
             })
-            .addCase(getCommentsPost.fulfilled, (state, action) => {
+            .addCase(getComments.fulfilled, (state, action) => {
                 state.state = "loaded";
-                state.list = state.list.concat(action.payload);
+                state.list = action.payload;
                 action.payload.forEach(comment => {
                     state.dict[comment._id] = comment;
                 });
@@ -81,7 +82,7 @@ export const getCommentById = (state, id) => state.comments.lib[id] || {};
 
 // If we are getting rid of list, use dict.items or whatever the right attribute is
 // Uhh dont the post and comments themselves have children lists???
-export const getCommentsChildren = (state, id) => state.comments.list.filter(comment => comment.parent == id);
+export const getCommentsChildren = (state, id) => state.comments.currPost.filter(comment => comment.parent == id);
 // Currently not properly adding comments to children to mongo. Fix and remove this selector
 
 

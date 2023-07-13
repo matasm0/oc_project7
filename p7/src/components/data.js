@@ -3,6 +3,8 @@ import { useEffect } from "react";
 
 
 import { getUsers } from "../redux/user";
+import { getNewPosts } from "../redux/post";
+import { getComments } from "../redux/comment";
 
 // Split into multiple components?
 export default function Data () {
@@ -29,13 +31,21 @@ export default function Data () {
     // Users List
 
     const userStatus = useSelector(state => state.users.status);
+    const postStatus = useSelector(state => state.posts.state);
+    const commentStatus = useSelector(state => state.comments.state);
     const usersDict = useSelector(state => state.users.dict);
     
     useEffect (() => {
         if (userStatus === "unloaded") {
             dispatch(getUsers());
         }
-    }, [dispatch, userStatus])
+        if (postStatus === "unloaded") {
+            dispatch(getNewPosts());
+        }
+        if (commentStatus === "unloaded") {
+            dispatch(getComments());
+        }
+    }, [dispatch, userStatus, postStatus, commentStatus])
 }
 
 // Have this have like a "user" object and stuff that other files can import so they don't have to keep using useSelector

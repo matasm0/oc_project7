@@ -23,6 +23,7 @@ import PostPage from "./pages/PostPage";
 import Entry from "./pages/Login";
 import Upload from "./pages/Upload";
 import Data from "./components/data";
+import UserPage, { UserSetup } from "./pages/User";
 
 import store from "./redux/store";
 import { Provider } from "react-redux";
@@ -38,6 +39,9 @@ export default function App() {
           <Route path="signup" element={<Entry />} />
           <Route path="post/:postId" element={<PostPage />} />
           <Route path="upload" element={<Upload />} />
+          <Route path="user/:userId" element={<UserPage />} />
+          <Route path="user/setup" element={<UserSetup firstTime={true}/>} />
+          <Route path="user/settings" element={<UserSetup />} />
         </Route>
       </Routes>
     </BrowserRouter>

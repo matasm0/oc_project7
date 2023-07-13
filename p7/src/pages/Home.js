@@ -2,11 +2,11 @@ import "../style/Home.scss";
 
 import { Link } from "react-router-dom"
 import { Header, Footer } from "../components/basic";
-import { Container, Card, Tabs, Tab, Button, Row, Col } from "react-bootstrap";
+import { Container, Card, Tabs, Tab, Button, Row, Col, Image } from "react-bootstrap";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { getNewPosts, getPostById, getPosts } from "../redux/post";
+import { getPostById, getPosts } from "../redux/post";
 import { findUser, likeStatus } from "../redux/user";
 import { addLikeDislikePost } from "../redux/actions";
 
@@ -24,6 +24,8 @@ import { addLikeDislikePost } from "../redux/actions";
 // thingy should be the same function between both.
 
 function Home() {
+    const [filterRead, setFilterRead] = useState(false);
+
     return (
         <div className="home-body">
             <Header currentPage={"home"}/>
@@ -47,8 +49,9 @@ function Home() {
                             <Button>Upload</Button>
                         </Link>
                     </Container> */}
+                    <Button onClick={e => setFilterRead(!filterRead)}>Show Read Posts</Button>
                     <Container className="home-posts">
-                        <PostList/>
+                        <PostList filterRead={filterRead}/>
                     </Container>
                 </Container>
             </Container>
@@ -59,24 +62,20 @@ function Home() {
 
 // getPosts should be getPostIds or something and only return ids. PostObject will then call the getPostInfo
 // action which will give it all of the information that it needs
-function PostList() {
+function PostList({filterRead = false}) {
     // const postsList = useSelector(state => state.posts.list);
     const postsList = useSelector(state => getPosts(state));
+    const userReadList = useSelector(state => state.users.currentUser.readPosts);
     
     const postsState = useSelector(state => state.posts.state);
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        if (postsState === "unloaded") {
-            dispatch(getNewPosts());
-        }
-    }, [postsState, dispatch]);
-
     let postObjects;
     if (postsState === "loaded") {
         postObjects = postsList.map(post => {
-            // console.log(post._id)
-            return <PostObject className="post" key={post._id} {...post}/>
+            const isRead = (userReadList.indexOf(post._id) != -1);
+            if (isRead && filterRead) return ""
+            return <PostObject key={post._id} {...{post, isRead}}/>
         })
 
     }
@@ -84,7 +83,7 @@ function PostList() {
     return (<>{postObjects}</>)
 }
 
-function PostObject(post) {
+function PostObject({post, isRead}) {
     // Take in post id or something so it can fill itself
     const author = useSelector(state => findUser(state, post.userId));
     const isLiked = useSelector(state => likeStatus(state, post._id));
@@ -102,11 +101,9 @@ function PostObject(post) {
         likeStatus
         ))
     }
-
-    console.log(isLiked)
     
     return (
-        <Card className="post">
+        <Card className={`post ${isRead ? 'isRead' : ""}`}>
             <Link to={`/post/${post._id}`}>
                 <Card.Img className="post-img" variant="top" src={post.imageUrl}></Card.Img>
             </Link>
@@ -114,8 +111,14 @@ function PostObject(post) {
                 <Row>
                     <Col className="card-text">
                         <Link to={`/post/${post._id}`}>
-                            <Card.Text>{post.title} posted by {author ? author.email : ""}</Card.Text>
+                            <Card.Text className="post-title">{post.title}</Card.Text>
                         </Link>
+                        <div className="post-author">
+                            <Card.Text className="pre-author">Posted by </Card.Text>
+                            <Image roundedCircle src={author ? author.pfp : require("../imgs/pfp.png")} className="pfp"/>
+                            <Card.Text className="author">{author ? author.email : ""}</Card.Text>
+                        </div>
+                        
                     </Col>
                 </Row>
                 <Row>

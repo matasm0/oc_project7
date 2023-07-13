@@ -4,7 +4,7 @@ import { addLikeDislikePost as uAddLikeDislikePost } from "./user";
 import { addLikeDislike as pAddLikeDislike } from "./post";
 
 import { addLikeDislikeComment as uAddLikeDislikeComment } from "./user";
-import { addLikeDislike as cAddLikeDislike } from "./comment";
+import { addLikeDislike as cAddLikeDislike, getCommentsChildren } from "./comment";
 
 
 export const addLikeDislikePost = (user, post, likeStatus) => {
@@ -26,7 +26,9 @@ export const PostInfo = (postId) => {
     let toReturn = {
         author : {
             status : "unloaded",
-            name : "",
+            username : "",
+            email : "",
+            pfp : "",
             id : "",
         },
         post : {
@@ -103,6 +105,8 @@ export const PostInfo = (postId) => {
 
     toReturn.author.id = author._id;
     toReturn.author.email = author.email;
+    toReturn.author.username = author.username;
+    toReturn.author.pfp = author.pfp;
 
     return toReturn;
 }
@@ -111,7 +115,9 @@ export const CommentInfo = (commentId) => {
     let toReturn = {
         author : {
             status : "unloaded",
-            name : "",
+            username : "",
+            email : "",
+            pfp : "",
             id : "",
         },
         comment : {
@@ -130,7 +136,7 @@ export const CommentInfo = (commentId) => {
 
     const commentsStatus = useSelector(state => state.comments.state);
     const commentsDict = useSelector(state => state.comments.dict);
-    
+    const tempChildren = useSelector(state => getCommentsChildren(state, commentId))
 
     const usersStatus = useSelector(state => state.users.status);
     const usersDict = useSelector(state => state.users.dict);
@@ -155,7 +161,8 @@ export const CommentInfo = (commentId) => {
     toReturn.comment.content = comment.content;
     toReturn.comment.likes = comment.likes;
     toReturn.comment.dislikes = comment.dislikes;
-    toReturn.comment.children = comment.children;
+    // toReturn.comment.children = comment.children;
+    toReturn.comment.children = tempChildren;
     toReturn.comment.parent = comment.parent;
 
     if (usersStatus === "unloaded") {
@@ -173,6 +180,8 @@ export const CommentInfo = (commentId) => {
 
     toReturn.author.id = author._id;
     toReturn.author.email = author.email;
+    toReturn.author.username = author.username;
+    toReturn.author.pfp = author.pfp;
 
     return toReturn;
 }

@@ -35,6 +35,13 @@ async function getCommentsPost(req, res, next) {
 
 exports.getCommentsPost = getCommentsPost;
 
+exports.getComments = async (req, res, next) => {
+    let commentsList = await Comment.find().exec();
+    return res.status(200).json({comments : commentsList});
+}
+
+// Have a get comments Id or something that also returns the parent and the child comment
+
 exports.updateComment = async (req, res, next) => {
     let comment = (await Comment.findOne({_id : req.params['id']}))["_doc"]
     let newComment = {...comment, ...req.body};

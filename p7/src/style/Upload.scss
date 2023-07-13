@@ -1,0 +1,13 @@
+@import './custom.scss';
+
+.upload-page {
+    width: 100vw;
+    max-width: 100vw;
+    min-height: 100vh;
+
+    background-color: $secondary;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between
+}

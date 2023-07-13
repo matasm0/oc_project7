@@ -1,18 +1,20 @@
-import "../style/PostPage";
+import "../style/PostPage.scss";
+import { Header, Footer } from "../components/basic";
 
 import { useNavigate, useParams } from "react-router-dom";
 import { likeStatus, findUser } from "../redux/user";
-import { Form, Button, Card, Row, Col, Container } from "react-bootstrap";
+import { Form, Button, Card, Row, Col, Container, Image } from "react-bootstrap";
 import { useEffect, useState } from "react";
 
 import { useSelector, useDispatch } from "react-redux";
-import { getCommentsPost, getCommentsChildren, create } from "../redux/comment";
+import { getComments, getCommentsChildren, create } from "../redux/comment";
 import { getPostById } from "../redux/post";
 import { addLikeDislikeComment } from "../redux/actions";
 
 import { readPost } from "../redux/user";
 
 import { PostInfo, CommentInfo } from "../redux/actions";
+import { AddCommentPage, EditCommentPage } from "../components/comments/commentsComponents";
 
 // extradite these functions into their respective component files
 async function postComment(userId, postId, parentId, comment, token) {
@@ -100,7 +102,7 @@ function PostPage() {
 
   const { author, post } = PostInfo(postId);  
 
-  const [comment, setComment] = useState("");
+  const [makeComment, setMakeComment] = useState(false);
 
   const userId = useSelector(state => state.users.currentUser._id);
   const token = useSelector(state => state.users.currentUser.token);
@@ -108,7 +110,7 @@ function PostPage() {
   // Unload post on Unmount
   useEffect(() => () => {
     dispatch({type : "posts/unload"});
-    dispatch({type : "comments/unload"});
+    // dispatch({type : "comments/unload"});
   }, []);
 
   // Add post to read on mount
@@ -123,22 +125,6 @@ function PostPage() {
       dispatch(getPostById(postId));
     }
   }, [dispatch, post.status]);
-
-  const createComment = (e) => {
-    e.preventDefault();
-    postComment(userId, postId, "root", comment, token).then(
-      res => {if (res.status == 201) res.json().then(data => {
-    addCommentToUser(userId, data._id, token).then(
-      res => res.json()).then(newUser => {
-        dispatch(create(data));
-        dispatch({type : "users/updateUser", payload : newUser})
-      });
-    })})
-  }
-
-  const inputHandler = (e) => {
-    setComment(e.target.value);
-  }
 
   const deletePostButton = (e) => {
     deletePost(postId, token).then(e => {
@@ -166,47 +152,58 @@ function PostPage() {
   // FIX I am using temporary html elements, change to better react ones
   if (post.status === 'loaded') {
     postObjects.title = <h1>{post.title}</h1>;
-    postObjects.author = <h3>posted by <b>{author.email}</b></h3>;
-    postObjects.image = <img src={post.image}/>;
+    postObjects.author = 
+    <div className="author-info">
+      <h3>posted by</h3>
+      <Image src={author.pfp || require("../imgs/pfp.png")} roundedCircle className="pfp"/>
+      <h3><b>{author.username}</b></h3>
+    </div>
+
+
+    postObjects.image = <img className="post-img" src={post.image}/>;
     
     postObjects.content = 
-    <div>
+    <Container className="post-content">
       {postObjects.image}
       <div>
         {postObjects.title}
         {postObjects.author}
       </div>
       {(author.id === userId) && <Button onClick={deletePostButton}>Delete</Button>}
-    </div>;
+    </Container>;
 
-    postObjects.commentForm = 
-    <Form onSubmit={createComment}>
-      <Form.Group>
-        <Form.Control placeholder="commment" onChange={inputHandler}></Form.Control>
-        <Form.Text></Form.Text>
-      </Form.Group>
-      <Button type="submit">Post</Button>
-    </Form>
+    postObjects.actions = 
+    <div className="post-actions">
+      <Button onClick={e => setMakeComment(true)}>Comment</Button>
+      <AddCommentPage {...{show : makeComment, setShow : setMakeComment, userId, postId, parentId : "root", token}}/>
+    </div>
   }
 
   return (
-    <>
-      {postObjects.content}
-      {postObjects.commentForm}
-      <Comments/>
-    </>
+    <div className="post-page">
+      <Header currentPage={"home"}/>
+      <Container className="post-body">
+        {postObjects.content}
+        {postObjects.actions}
+        <Comments/>
+      </Container>
+      <Footer/>
+    </div>
   ); 
 }
 
 function Comments() {
   const { postId } =  useParams();
   const commentState = useSelector(state => state.comments.state);
-  const commentsList = useSelector(state => getCommentsChildren(state, "root"));
+  const postCommentState = useSelector(state=>state.comments.currPostStatus);
+  const postCommentsList = useSelector(state => state.comments.currPost);
   const dispatch = useDispatch();
+
+
 
   useEffect(() => {
     if (commentState === "unloaded") {
-      dispatch(getCommentsPost({postId : postId}))
+      dispatch(getComments());
     }
   }, [commentState, dispatch]);
 
@@ -214,51 +211,35 @@ function Comments() {
   // We probably load all comments at once, so find only the comments that are root
   let commentObjects;
   if (commentState === "loaded") {
-    commentObjects = commentsList.map(comment => {
-      return <Comment key={comment._id} {...{commentId : comment._id}}/>
+    if (postCommentState == "unloaded") dispatch({type : "comments/getCommentsPost", payload : postId})
+    commentObjects = postCommentsList.map(comment => {
+      return <Comment key={comment._id} {...{commentId : comment._id, threadParent: true}}/>
     })
   }
 
   return (
-    <>
+    <div className="comments">
       {commentObjects}
-    </>
+    </div>
   )
 }
 
 
 
 // Have a user store with a dictionary of users that contains usernames and pfps mayhaps
-function Comment({commentId, _maxLevel = 1}) {
+function Comment({commentId, _maxLevel = 1, threadParent = false}) {
   const dispatch = useDispatch();
 
   const { postId } =  useParams();
 
   // comment prop will just be id
   const { author, comment } = CommentInfo(commentId);
-  // console.log(author, comment);
 
   const userId = useSelector(state => state.users.currentUser._id);
   const token = useSelector(state => state.users.currentUser.token);
 
-  const [newComment, setComment] = useState("");
-
-  const inputHandler = (e) => {
-    setComment(e.target.value);
-  }
-
-  const addNewComment = (e) => {
-    postComment(userId, postId, commentId, newComment, token).then(
-      res => {if (res.status == 201) res.json().then(data => {
-    addCommentToUser(userId, commentId, token).then(
-      res => res.json()).then(newUser => {
-        dispatch(create(data));
-        dispatch({type : "users/updateUser", payload : newUser});
-      });
-    })})
-  }
-
-  // ADD GUARDS
+  const [makeComment, setMakeComment] = useState(false);
+  const [editComment, setEditComment] = useState(false);
 
   // maxLevel for how many levels of comments to get. 0 means just the comment itself. 2 is default
   // Pull 5 comments per level
@@ -268,11 +249,16 @@ function Comment({commentId, _maxLevel = 1}) {
   const [numShownComments, setNumComments] = useState(_maxLevel == 0 ? 0 : Math.min(childrenList.length, 5));
   const [maxLevel, setMaxLevel] = useState(_maxLevel);
 
+  // ADD GUARDS
+  if (!comment) return <></>;
+
   if (maxLevel > 0) {
     for (let i = 0; i < numShownComments; i++) {
-      childrenObjects.push(<Comment key={childrenList[i]._id} {...{comment : childrenList[i], _maxLevel : maxLevel - 1}}/>)
+      childrenObjects.push(<Comment key={childrenList[i]._id} {...{commentId : childrenList[i]._id, _maxLevel : maxLevel - 1}}/>)
     }
   }
+
+  // console.log(childrenObjects)
 
   const expandComments = (e) => {
     if (maxLevel == 0) setMaxLevel(1);
@@ -284,15 +270,7 @@ function Comment({commentId, _maxLevel = 1}) {
     expandButton = <Button onClick={expandComments}>More Comments</Button>
   }
 
-  const editCommentButton = (e) => {
-    // Rearistickly I should be updating user as well... some latency shouldn't be too bad
-    editComment(commentId, "edited", token).then(res => res.json()).then(data => {
-      dispatch({type : "comments/update", payload : data})
-    })
-  }
-
   const deleteCommentButton = (e) => {
-    // Latency is a little less acceptable here... oh well
     deleteComment(commentId, token).then(res => res.json()).then(data => {
       dispatch ({type : "comments/update", payload : data});
     });
@@ -319,29 +297,31 @@ function Comment({commentId, _maxLevel = 1}) {
   }
 
   if (comment.status === 'loaded') {
-    commentObjects.author = <Card.Header>{author.email}</Card.Header>
+    commentObjects.author = 
+    <Card.Header className="comment-header">
+      <Image src={author.pfp || require("../imgs/pfp.png")} roundedCircle className="pfp"/>
+      {author.username}
+    </Card.Header>
 
     commentObjects.content = 
     <Card.Body>
       <Card.Text>{comment.content}</Card.Text>
     </Card.Body>
 
-    commentObjects.commentForm =
-    <Form.Group>
-      <Form.Control placeholder="Add a comment" onChange={inputHandler}></Form.Control>
-      <Form.Text></Form.Text>
-      <Button onClick={addNewComment}>E</Button>
-    </Form.Group>
+    commentObjects.footer =
+    <>
+      <AddCommentPage {...{show : makeComment, setShow : setMakeComment, userId, postId, parentId : commentId, token}}/>
+    </>
 
     commentObjects.body = 
     <Card>
       {commentObjects.author}
       {commentObjects.content}
       <Card.Footer>
-        {commentObjects.commentForm}
+        {commentObjects.footer}
         {(author.id == userId) && 
         <>
-          <Button onClick={editCommentButton}>Edit</Button>
+          <Button onClick={e => setEditComment(true)}>Edit</Button>
           <Button onClick={deleteCommentButton}>Delete</Button>
         </>}
         <Button value={"like"} onClick={likeDislike}>Like</Button>
@@ -352,9 +332,13 @@ function Comment({commentId, _maxLevel = 1}) {
   }
 
   return (
-    <Container>
+    <Container className={`comment ${threadParent && "thread-parent"}`}>
+      <EditCommentPage {...{show : editComment, setShow : setEditComment, commentId, token, prevComment : comment.content}}/>
       {commentObjects.body}
-      {childrenObjects}
+      {childrenObjects.length > 0 && 
+      <div className="thread-children">
+        {childrenObjects}
+      </div>}
     </Container>
   )
 

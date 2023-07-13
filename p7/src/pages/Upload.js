@@ -1,9 +1,12 @@
+import "../style/Upload.scss"
+
 import { Form, Row, Col, Container, Button } from "react-bootstrap"
 import { Link, useNavigate } from "react-router-dom"
 
 import { useDispatch, useSelector } from "react-redux"
 import { createPost } from "../redux/post"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { Footer, Header } from "../components/basic"
 
 async function postPost (formData, userToken) {
     return await fetch('http://localhost:3001/api/posts/create',
@@ -17,7 +20,6 @@ async function postPost (formData, userToken) {
 }
 
 async function addPostToUser (postId, userId, userToken) {
-    console.log(postId)
     return await fetch('http://localhost:3001/api/users/createPost/' + userId, {
         method : "POST",
         headers : {
@@ -38,6 +40,7 @@ async function addPostToUser (postId, userId, userToken) {
 function Upload() {
     const [title, setTitle] = useState("");
     const [file, setFile] = useState("");
+    const [fileUrl, setFileUrl] = useState("");
  
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -61,26 +64,43 @@ function Upload() {
         });
     }
 
+    const imageInputHandler = (e) => {
+        setFile(e.target.files[0]);
+    }
+
+    useEffect(()=>()=>{
+        URL.revokeObjectURL(fileUrl);
+    }, [])
+
+    useEffect(() => {
+        if (file) setFileUrl(URL.createObjectURL(file));
+    }, [file])
+
     return (
-        <>
-            <Form onSubmit={upload}>
-                <Row>
-                    <Col md>
-                        <Form.Group controlId="formTitle">
-                            <Form.Label>Post Title</Form.Label>
-                            <Form.Control placeholder="title" onChange={e => setTitle(e.target.value)}/>
-                            <Form.Text></Form.Text>
-                        </Form.Group>
-                        <Form.Group controlId="postImage">
-                            <Form.Label>Image</Form.Label>
-                            <Form.Control type="file" accept="image/*" onChange={e => setFile(e.target.files[0])}/>
-                        </Form.Group>
-                    </Col>
-                </Row>
-                <Link to={"/home"}><Button>Cancel</Button></Link>
-                <Button type="submit">Submit</Button>
-            </Form>
-        </>
+        <div className="upload-page">
+            <Header currentPage={"home"}/>
+            <Container>
+                <Form onSubmit={upload}>
+                    <Row>
+                        <Col md>
+                            <Form.Group controlId="formTitle">
+                                <Form.Label>Post Title</Form.Label>
+                                <Form.Control placeholder="title" onChange={e => setTitle(e.target.value)}/>
+                                <Form.Text></Form.Text>
+                            </Form.Group>
+                            <img src={fileUrl}></img>
+                            <Form.Group controlId="postImage">
+                                <Form.Label>Image</Form.Label>
+                                <Form.Control type="file" accept="image/*" onChange={imageInputHandler}/>
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    <Link to={"/home"}><Button>Cancel</Button></Link>
+                    <Button type="submit">Submit</Button>
+                </Form>
+            </Container>
+            <Footer/>
+        </div>
     )
 } 
 

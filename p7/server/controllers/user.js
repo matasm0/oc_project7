@@ -81,10 +81,21 @@ exports.getUsers = async (req, res, next) => {
     let usersList = await User.find().exec();
     let toReturn = []
     usersList.forEach(user => {
-        // We need to add usernames and pfps, liked/dislike list
-        toReturn.push({'_id' : user._id, 'email' : user.email, 'posts' : user.posts, 'comments' : user.comments,})
+        user = user['_doc']
+        delete user['__v']
+        delete user['password']
+        toReturn.push({...user});
     });
     return res.status(200).json({usersList : toReturn});
+}
+
+exports.getUserId = async (req, res, next) => {
+    const user = (await User.findOne({_id : req.params.id}))['_doc'];
+
+    delete user['__v']
+    delete user['password']
+
+    return res.status(200).json({...user});
 }
 
 // Combine post and comment into one, just check which in here
@@ -184,7 +195,7 @@ exports.createPost = async (req, res, next) => {
 
     user.posts.push(postId);
 
-    await User.updateOne({_id : req.params['id'], user});
+    await User.updateOne({_id : req.params['id']}, user);
 
     delete user['__v'];
     delete user['password'];
@@ -198,7 +209,7 @@ exports.createComment = async (req, res, next) => {
 
     user.comments.push(commentId);
 
-    await User.updateOne({_id : req.params['id'], user});
+    await User.updateOne({_id : req.params['id']}, user);
 
     delete user['__v'];
     delete user['password'];
@@ -213,7 +224,7 @@ exports.deletePost = async (req, res, next) => {
     const tempIndex = user.posts.indexOf(postId);
     user.posts.splice(tempIndex, 1);
 
-    await User.updateOne({_id : req.params['id'], user});
+    await User.updateOne({_id : req.params['id']}, user);
 
     delete user['__v'];
     delete user['password'];
@@ -228,7 +239,7 @@ exports.deleteComment = async (req, res, next) => {
     const tempIndex = user.comments.indexOf(commentId);
     user.comments.splice(tempIndex, 1);
 
-    await User.updateOne({_id : req.params['id'], user});
+    await User.updateOne({_id : req.params['id']}, user);
 
     delete user['__v'];
     delete user['password'];
@@ -250,4 +261,20 @@ exports.readPost = async (req, res, next) => {
     delete user['password'];
 
     return res.status(200).json({...user});
+}
+
+exports.updateUser = async (req, res, next) => {
+    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+
+    if (req.file) user['pfp'] = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
+
+    if (req.body.username) user['username'] = req.body.username;
+
+    await User.updateOne({_id : req.params['id']}, user);
+
+    delete user['__v'];
+    delete user['password'];
+
+    return res.status(200).json({...user});
+
 }

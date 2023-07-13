@@ -78,7 +78,7 @@ function Login({ isLogin }) {
                     if (res.status == 200) res.json().then(data => {
                         console.log(data);
                         dispatch({type: "users/login", payload: data});
-                        navigate("/home");
+                        navigate("/users/setup");
                     })
                 })
             }

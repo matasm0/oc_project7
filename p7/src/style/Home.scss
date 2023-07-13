@@ -90,6 +90,11 @@ body {
                 border-radius: 20px;
 
                 background-color: $tertiary;
+
+                &.isRead {
+                    background-color: #bdb8b8;
+                }
+
                 padding : 20px;
 
                 .post-img {
@@ -100,13 +105,34 @@ body {
                     object-fit: contain;
                 }
                 .post-body {
+                    padding: 5px;
                     .row {
                         display: flex;
                         justify-content: space-between;
 
                         .card-text {
                             flex-grow: 1;
-                            padding-bottom: 20px;
+                            padding-bottom: 10px;
+
+                        }
+                        .post-title {
+                            font-size: 40px;
+                            font-weight: bold;
+
+                            margin: 0;
+                        }
+
+                        .post-author {
+                            width: fit-content;
+
+                            display: flex;
+
+                            .pfp {
+                                width: 30px;
+                                height: 30px;
+
+                                margin: 0 2px 0 5px;
+                            }
                         }
 
                         .likeDislike {
@@ -130,4 +156,26 @@ body {
             }
         }
     }
+}
+
+@media (max-width : 1000px) {
+
+}
+
+@media (max-width : 800px) {
+    header {
+        position: fixed;
+        width: 100%;
+        z-index: 1;
+    }
+
+    .home.container,
+    .home-posts.container {
+        max-width: initial;
+
+        &>* {
+            max-width: initial;
+        }
+    }
+
 }
