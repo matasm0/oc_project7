@@ -1,15 +1,11 @@
-// import './App.css';
-// import 'bootstrap/dist/css/bootstrap.min.css';
 import "../style/App.scss";
 
-// import { Button, Alert, Breadcrumb, Card, Form, Container, Row, Col } from 'react-bootstrap';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Header, Footer } from "../components/basic";
+import { useNavigate } from "react-router-dom";
+import { Header, Footer, ErrorModal } from "../components/basic";
 import { useState } from "react";
 
-import { useSelector, useDispatch } from "react-redux";
-import { login } from "../redux/user";
+import { useDispatch } from "react-redux";
 
 function Entry(props) {
 
@@ -30,6 +26,8 @@ function Login({ isLogin }) {
     const navigate = useNavigate();
     const [ email, setEmail ] = useState("");
     const [ password, setPassword ] = useState("");
+    const [ showError, setShowError ] = useState(false);
+    const [ error, setError ] = useState("");
     
     const loginSubmit = (e) => {
         e.preventDefault();
@@ -41,14 +39,19 @@ function Login({ isLogin }) {
                 'email' : email,
                 'password' : password
             })
-        }).then(res => {
-            if (res.status == 200) res.json().then(data => {
+        }).then(res => res.json().then(data => {
+            if (res.status == 200) {
                 // dispatch(login(data.userId));
                 dispatch({type: "users/login", payload: data})
                 navigate("/home");
-            })
-        }).catch(error => {
-            // do sumn
+            }
+            else {
+                setError(data['error']);
+                setShowError(true);
+            }
+        })).catch(error => {
+            setError(error.message);
+            setShowError(true);
         })
     }
 
@@ -64,7 +67,7 @@ function Login({ isLogin }) {
                 'email' : email,
                 'password' : password
             })
-        }).then(res => {
+        }).then(res => res.json().then(temp => {
             if (res.status == 200) {
                 fetch('http://localhost:3001/api/auth/login', 
                 {
@@ -82,7 +85,14 @@ function Login({ isLogin }) {
                     })
                 })
             }
-        })
+            else {
+                setShowError(true);
+                setError(temp['error']);
+            }
+        })).catch(error => {
+            setShowError(true);
+            setError(error.message);
+        }) 
     }
 
     const inputHandler = (e) => {
@@ -98,6 +108,7 @@ function Login({ isLogin }) {
 
     return (
         <>
+            <ErrorModal {...{show : showError, setShow : setShowError, error : error}}/>
             <p className="welcome" style={{ padding: "0px 30px" }}>Welcome to [Insert name of Site]</p>
             <Form className="login tp" style={{ padding: "0px 30px" }} onSubmit={isLogin ? loginSubmit : signupSubmit}>
                 <Row>
@@ -126,10 +137,6 @@ function Login({ isLogin }) {
             </Form>
         </>
     );
-}
-
-function SubmitButton(signIn = false) {
-
 }
 
 export default Entry;

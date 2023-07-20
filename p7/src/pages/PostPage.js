@@ -97,10 +97,12 @@ async function deletePostFromUser(userId, postId, token) {
 function PostPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const options = {month : "numeric", day : "numeric", year : "numeric", hour : '2-digit', minute : '2-digit'}
 
   const { postId } =  useParams();
 
-  const { author, post } = PostInfo(postId);  
+  const { author, post } = PostInfo(postId); 
+  const createdTime = new Date(post.created); 
 
   const [makeComment, setMakeComment] = useState(false);
 
@@ -126,6 +128,10 @@ function PostPage() {
       dispatch(getPostById(postId));
     }
   }, [dispatch, post.status]);
+
+  if (post.status === "missing") {
+    return <div>Post Does Not Exist</div>
+  }
 
   const deletePostButton = (e) => {
     deletePost(postId, token).then(e => {
@@ -170,6 +176,7 @@ function PostPage() {
       <h3>posted by</h3>
       <Image src={author.pfp || require("../imgs/pfp.png")} roundedCircle className="pfp"/>
       <h3><b>{author.username}</b></h3>
+      <p>{createdTime.toLocaleString(navigator.language, options)}</p>
     </div>
 
 
@@ -221,6 +228,7 @@ function Comments() {
   const commentState = useSelector(state => state.comments.state);
   const postCommentState = useSelector(state=>state.comments.currPostStatus);
   const postCommentsList = useSelector(state => state.comments.currPost);
+  const rootCommentsList = postCommentsList.filter(comment => comment.parent == "root")
   const dispatch = useDispatch();
 
   // console.log(postCommentsList)
@@ -238,7 +246,7 @@ function Comments() {
   // We probably load all comments at once, so find only the comments that are root
   let commentObjects;
   if (commentState === "loaded") {
-    commentObjects = postCommentsList.map(comment => {
+    commentObjects = rootCommentsList.map(comment => {
       return <Comment key={comment._id} {...{commentId : comment._id, threadParent: true}}/>
     })
   }
@@ -297,7 +305,7 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
 
   let expandButton;
   if (numShownComments < childrenList.length) {
-    expandButton = <Button onClick={expandComments}>More Comments</Button>
+    expandButton = <Button onClick={expandComments}>More</Button>
   }
 
   const deleteCommentButton = (e) => {
@@ -330,8 +338,8 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
     commentObjects.author = 
     <Card.Header className="comment-header">
       <Image src={author.pfp || require("../imgs/pfp.png")} roundedCircle className="pfp"/>
-      <Card.Text>{author.username}</Card.Text>
-      <Card.Text>{createdTime.toLocaleString(navigator.language, options)}</Card.Text>
+      <Card.Text className="author-username">{author.username}</Card.Text>
+      <Card.Text className="posted-time">{createdTime.toLocaleString(navigator.language, options)}</Card.Text>
     </Card.Header>
 
     commentObjects.content = 
@@ -358,6 +366,8 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
             <Button className={`dislike ${isLiked == -1 ? "active" : ""}`} value={"dislike"} onClick={likeDislike}>
                 {comment.dislikes} {comment.dislikes == 1 ? " Dislike" : " Dislikes"} 
             </Button>
+            <Button className="add-comment" onClick={e => setMakeComment(true)}>Comment</Button>
+            {expandButton}
           </div>
           {(author.id == userId) && 
           <div className="is-op">
@@ -365,7 +375,6 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
             <Button onClick={deleteCommentButton}>Delete</Button>
           </div>}
         </div>
-        {expandButton}
       </Card.Footer>
     </Card>
   }
@@ -374,6 +383,7 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
     <Container className={`comment ${threadParent && "thread-parent"}`}>
       <EditCommentPage {...{show : editComment, setShow : setEditComment, commentId, token, prevComment : comment.content}}/>
       {commentObjects.body}
+      <div className="hr"></div>
       {childrenObjects.length > 0 && 
       <div className="thread-children">
         {childrenObjects}

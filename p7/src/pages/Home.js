@@ -70,19 +70,21 @@ function PostList({filterRead = false}) {
     const userReadList = useSelector(state => state.users.currentUser.readPosts);
     
     const postsState = useSelector(state => state.posts.state);
-    const dispatch = useDispatch();
+    const empty = <div>Nothing to see here!</div>
 
-    let postObjects;
+    let postObjects = [];
     if (postsState === "loaded") {
         postObjects = postsList.map(post => {
             const isRead = (userReadList.indexOf(post._id) != -1);
-            if (isRead && filterRead) return ""
+            if (isRead && filterRead) return
             return <PostObject key={post._id} {...{post, isRead}}/>
         })
 
     }
+    
+    postObjects = postObjects.filter(object => object != undefined);
 
-    return (<>{postObjects}</>)
+    return (<>{postObjects.length > 0 ? postObjects : empty}</>)
 }
 
 function PostObject({post, isRead}) {
@@ -118,11 +120,11 @@ function PostObject({post, isRead}) {
                         <Link to={`/post/${post._id}`}>
                             <Card.Text className="post-title">{post.title}</Card.Text>
                         </Link>
-                        <div className="post-author">
+                        <Link to={`/user/${post.userId}`} className="post-author">
                             <Card.Text className="pre-author">Posted by </Card.Text>
                             <Image roundedCircle src={author ? author.pfp : require("../imgs/pfp.png")} className="pfp"/>
                             <Card.Text className="author">{author ? author.email : ""}</Card.Text>
-                        </div>
+                        </Link>
                         <Card.Text className="post-time">{createdTime.toLocaleString(navigator.language, options)}</Card.Text>
                     </Col>
                 </Row>

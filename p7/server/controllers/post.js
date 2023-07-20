@@ -19,10 +19,12 @@ async function postPost(req, res, next) {
         newPost = new Post({...postDefault, ...req.body, imageUrl});
     }
     catch (e) {
-        return res.status(401).json({message : "Failed to create post", e})
+        return res.status(401).json({error : "Failed to create post"})
     }
 
-    let newPostObject = await newPost.save();
+    let newPostObject = {}
+    try {await newPost.save();}
+    catch(e) {return res.status(400).json({error : "Failed to create post"})}
 
     res.status(201).json({message : "Created", post : newPostObject});
 }
@@ -30,7 +32,9 @@ async function postPost(req, res, next) {
 exports.postPost = postPost;
 
 async function getPosts(req, res, next) {
-    let postList = await Post.find({'userId' : {$ne : 'deleted'}}).exec();
+    let postList = []
+    try {postList = await Post.find({'userId' : {$ne : 'deleted'}}).exec();}
+    catch(e) {return res.status(400).json({error : "Failed to get posts"})}
 
     return res.status(200).json({posts : postList});
 }
@@ -38,7 +42,9 @@ async function getPosts(req, res, next) {
 exports.getPosts = getPosts;
 
 exports.getPostId = async (req, res, next) => {
-    const post = await Post.find({_id : req.params['id']}).exec();
+    let post = {}
+    try {post = await Post.find({_id : req.params['id']}).exec();}
+    catch(e) {return res.status(400).json({error : "Failed to get post"})}
     return res.status(200).json({post : post[0]});
 }
 
@@ -53,12 +59,15 @@ exports.deletePost = async (req, res, next) => {
         imageUrl : ""
         // Do we need to clear likedUsers and such?
     }
-    await Post.updateOne({_id : req.params['id']}, post);
+    try {await Post.updateOne({_id : req.params['id']}, post);}
+    catch(e) {return res.status(400).json({error : "Failed to delete post"});}
     return res.status(200).json({message : "Post Deleted"});
 }
 
 exports.addLikeDislike = async (req, res, next) => {
-    let post = (await Post.findOne({_id : req.params['id']}).exec())['_doc'];
+    let post = {}
+    try { post = (await Post.findOne({_id : req.params['id']}).exec())['_doc'];}
+    catch(e) {return res.status(400).json({error : "Failed to like/dislike post"});}
     const userId = req.body.userId;
 
     let tempIndex;
@@ -90,7 +99,8 @@ exports.addLikeDislike = async (req, res, next) => {
     post.likes = post.usersLiked.length;
     post.dislikes = post.usersDisliked.length;
 
-    await Post.updateOne({_id : req.params['id']}, post);
+    try {await Post.updateOne({_id : req.params['id']}, post);}
+    catch(e) {return res.status(400).json({error : "Failed to update post"});}
 
     return res.status(200).json({...post})
 }

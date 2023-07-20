@@ -29,21 +29,28 @@ async function postComment(req, res, next) {
 exports.postComment = postComment;
 
 async function getCommentsPost(req, res, next) {
-    let commentsList = await Comment.find({'postParent' : req.params['postId']}).exec()
+    let commentsList = []
+    try {commentsList = await Comment.find({'postParent' : req.params['postId']}).exec()}
+    catch(e) {return res.status(400).json({error : "Failed to get comments"})}
+
     return res.status(200).json({comments : commentsList});
 }
 
 exports.getCommentsPost = getCommentsPost;
 
 exports.getComments = async (req, res, next) => {
-    let commentsList = await Comment.find().exec();
+    let commentsList = []
+    try {commentsList = await Comment.find().exec();}
+    catch(e) {return res.status(400).json({error : "Failed to get comments"})}
     return res.status(200).json({comments : commentsList});
 }
 
 // Have a get comments Id or something that also returns the parent and the child comment
 
 exports.updateComment = async (req, res, next) => {
-    let comment = (await Comment.findOne({_id : req.params['id']}))["_doc"]
+    let comment = {}
+    try {comment = (await Comment.findOne({_id : req.params['id']}))["_doc"]}
+    catch(e) {return res.status(400).json({error : "Failed to update comment"})}
     let newComment = {...comment, ...req.body};
     await Comment.updateOne({_id : req.params['id']}, newComment);
 
@@ -61,13 +68,16 @@ exports.deleteComment = async (req, res, next) => {
         usersDisliked : [],
     }
 
-    await Comment.updateOne({_id : req.params['id']}, comment);
+    try {await Comment.updateOne({_id : req.params['id']}, comment);}
+    catch(e) {return res.status(400).json({error : "Failed to delete comment"})}
 
     return res.status(200).json({...comment});
 }
 
 exports.addLikeDislike = async (req, res, next) => {
-    let comment = (await Comment.findOne({_id : req.params['id']}))['_doc']
+    let comment = {}
+    try {comment = (await Comment.findOne({_id : req.params['id']}))['_doc']}
+    catch(e) {return res.status(400).json({error : "Failed to like/dislike comment"})}
     const userId = req.body.userId;
 
     let tempIndex;

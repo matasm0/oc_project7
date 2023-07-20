@@ -14,12 +14,14 @@ export const getPosts = (state) => {
 export const getNewPosts = createAsyncThunk('posts/getNewPosts', async () => {
     const res = await fetch('http://localhost:3001/api/posts/get');
     const data = await res.json();
+    if (res.status == 400) throw new Error(data['error'])
     return data['posts'];
 });
 
 export const getPostById = createAsyncThunk('posts/getPostId', async (id) => {
     const res = await fetch('http://localhost:3001/api/posts/get/' + id);
     const data = await res.json();
+    if (res.status == 400) throw new Error(data['error'])
     return data['post'];
 });
 
@@ -38,6 +40,7 @@ export const addLikeDislike = createAsyncThunk('posts/addLikeDislike', async(pro
         })
     })
     const data = await res.json();
+    if (res.status == 400) throw new Error(data['error'])
     return data;
 });
 
@@ -48,6 +51,9 @@ const initialState = {
 
     current: {},
     currentState : "unloaded",
+
+    error : "",
+    currentOperationStatus: "idle",
 };
 
 const postSlice = createSlice({
@@ -69,6 +75,10 @@ const postSlice = createSlice({
             state.current = {};
             state.currentState = "unloaded";
         },
+        clearError: (state, action) => {
+            state.currentOperationStatus = "idle";
+            state.error = "";
+        }
     },
     extraReducers(builder) {
         builder
@@ -84,6 +94,7 @@ const postSlice = createSlice({
             })
             .addCase(getNewPosts.rejected, (state, action) => {
                 state.state = 'rejected';
+                state.error = "Failed to get new posts";
             })
             .addCase(getPostById.pending, (state, action) => {
                 state.currentState = 'loading'
@@ -91,6 +102,10 @@ const postSlice = createSlice({
             .addCase(getPostById.fulfilled, (state, action) => {
                 state.currentState = 'loaded';
                 state.current = action.payload;
+            })
+            .addCase(getPostById.rejected, (state, action) => {
+                state.currentState = 'rejected';
+                state.error = "Failed to get post";
             })
             .addCase(addLikeDislike.fulfilled, (state, action) => {
                 state.dict[action.payload._id] = action.payload;

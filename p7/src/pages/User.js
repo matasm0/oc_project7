@@ -76,11 +76,10 @@ export default function UserPage() {
 
     const postList = useSelector(state => state.posts.dict);
 
-    
-
     useEffect(() => {
-        fetch('http://localhost:3001/api/users/get/' + userId).then(res => res.json()).then (
+        fetch('http://localhost:3001/api/users/get/' + userId).then(res => res.json().then (
             currUser => {
+            if (res.status == 200) {
                 const empty = <p className="empty">Nothing to see here</p>
 
                 let posts = [];
@@ -133,7 +132,10 @@ export default function UserPage() {
                     </Tabs>
                 </Container>);
             }
-        )
+            else {
+                setUser(<p>User Does Not Exist</p>)
+            }
+        }))
     }, []);
 
 

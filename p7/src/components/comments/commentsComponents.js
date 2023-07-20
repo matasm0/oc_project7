@@ -66,6 +66,7 @@ export function AddCommentPage({show, setShow, userId, postId, parentId, token})
             res => res.json()).then(newUser => {
             dispatch(create(data));
             dispatch({type : "users/updateUser", payload : newUser})
+            setShow(false);
             });
         })})
     }

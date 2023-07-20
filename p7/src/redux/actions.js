@@ -61,7 +61,7 @@ export const PostInfo = (postId) => {
     
     // Haha! This needs to be an if if not if else if
     if (currentStatus === 'loaded') {
-        if (current._id == postId)
+        if (current && current._id == postId)
             post = current;
             toReturn.post.status = "loaded";
     }

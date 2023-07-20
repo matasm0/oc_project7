@@ -25,6 +25,7 @@ export const addLikeDislikePost = createAsyncThunk("users/addLikeDislikePost", a
         })
     })
     const data = await res.json();
+    if (res.status == 400) throw new Error(data['error'])
     return data;
 });
 
@@ -42,6 +43,7 @@ export const addLikeDislikeComment = createAsyncThunk("users/addLikeDislikeComme
         })
     })
     const data = await res.json()
+    if (res.status == 400) throw new Error(data['error'])
     return data;
 })
 
@@ -59,6 +61,7 @@ export const readPost = createAsyncThunk("users/readPost", async (props) =>{
         })
     })
     const data = await res.json();
+    if (res.status == 400) throw new Error(data['error'])
     return data;
 })
 
@@ -74,7 +77,9 @@ const initialState = {
         // dislikedPosts : [],
     },
     status : "unloaded",
-    dict : {}
+    dict : {},
+    error : "",
+    currentOperationStatus: "idle",
 }
 
 
@@ -86,9 +91,6 @@ const userSlice = createSlice({
         login: (state, action) => {
             state.currentUser = {...action.payload};
             state.currentUser.loggedIn = true;
-            // state.currentUser.id = action.payload.userId;
-            // state.currentUser.email = action.payload.email;
-            // state.currentUser.token = action.payload.token;
         },
         logout: (state, action) => {
             localStorage.removeItem("user");
@@ -97,6 +99,10 @@ const userSlice = createSlice({
         updateUser: (state, action) => {
             state.currentUser = {...state.currentUser, ...action.payload};
         },
+        clearError: (state, action) => {
+            state.currentOperationStatus = "idle";
+            state.error = "";
+        }
     },
     extraReducers(builder) {
         builder
@@ -109,11 +115,31 @@ const userSlice = createSlice({
                     state.dict[user._id] = user;
                 })
             })
+            .addCase(getUsers.rejected, (state, action) => {
+                state.status = "rejected";
+                state.error = "Failed to get users";
+            })
+            .addCase(addLikeDislikePost.pending, (state, action) => {
+                state.currentOperationStatus = "pending";
+            })
             .addCase(addLikeDislikePost.fulfilled, (state, action) => {
+                state.currentOperationStatus = "idle";
                 state.currentUser = {...state.currentUser, ...action.payload}
             })
+            .addCase(addLikeDislikePost.rejected, (state, action) => {
+                state.currentOperationStatus = "rejected";
+                state.error = "Failed to like/dislike post";
+            })
+            .addCase(readPost.pending, (state, action) => {
+                state.currentOperationStatus = "pending";
+            })
             .addCase(readPost.fulfilled, (state, action) => {
+                state.currentOperationStatus = "idle";
                 state.currentUser = {...state.currentUser, ...action.payload}
+            })
+            .addCase(readPost.rejected, (state, action) => {
+                state.currentOperationStatus = "rejected";
+                state.error = "Couldn't add post to readList";
             })
     }
 })

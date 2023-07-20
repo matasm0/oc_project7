@@ -10,15 +10,22 @@ async function login(req, res, next) {
 
     // check validity?
     if (!email || !password) {
-        res.status(400).send(new Error("Invalid signup request"));
+        res.status(400).json({error : "Invalid signup request"});
         return;
     }
 
-    const tempRes = await User.findOne({email : email});
+    let tempRes = {}
+    try {
+        tempRes = await User.findOne({email : email});
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
+
     const user = tempRes['_doc']
 
     if (!user) {
-        res.status(400).json({message : "Invalid username/password"});
+        res.status(400).json({error : "Invalid username/password"});
     }
     else {   
         bcrypt.compare(password, user.password).then((valid) => {
@@ -52,33 +59,46 @@ async function signup(req, res, next) {
 
     // check validity?
     if (!email || !password) {
-        res.status(400).json({message : ("Invalid signup request")});
+        res.status(400).json({error : ("Invalid signup request")});
         return;
     }
 
-    if (await User.findOne({email : email})) {
-        res.status(400).json({message : "User already exists"});
+    try {
+        if (await User.findOne({email : email})) {
+            res.status(400).json({error : "User already exists"});
+        }
+        else {
+            // FIX
+            bcrypt.hash(password, 10).then((hashedPw) => {
+                const user = new User({
+                    email : email,
+                    password : hashedPw
+                })
+                user.save().then(() => {
+                    res.status(200).json({message : "User created"});
+                }).catch(e => {
+                    res.status(400).json({error : "Failed to create user"});
+                })
+            })    
+        }
     }
-    else {
-        // FIX
-        bcrypt.hash(password, 10).then((hashedPw) => {
-            const user = new User({
-                email : email,
-                password : hashedPw
-            })
-            user.save().then(() => {
-                res.status(200).json({message : "User created"});
-            }).catch(e => {
-                res.status(400).json({message : "Failed to create user"});
-            })
-        })    
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
     }
 }
 
 exports.signup = (req, res, next) => signup(req, res, next);
 
 exports.getUsers = async (req, res, next) => {
-    let usersList = await User.find().exec();
+    let usersList = {}; 
+    
+    try{
+        usersList = await User.find().exec();
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
+
     let toReturn = []
     usersList.forEach(user => {
         user = user['_doc']
@@ -90,7 +110,13 @@ exports.getUsers = async (req, res, next) => {
 }
 
 exports.getUserId = async (req, res, next) => {
-    const user = (await User.findOne({_id : req.params.id}))['_doc'];
+    let user = {}
+    try {
+        user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
 
     delete user['__v']
     delete user['password']
@@ -100,7 +126,13 @@ exports.getUserId = async (req, res, next) => {
 
 // Combine post and comment into one, just check which in here
 exports.addLikeDislikePost = async (req, res, next) => {
-    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    let user = {}
+    try {
+        user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
     const postId = req.body.postId;
 
     let tempIndex;
@@ -136,7 +168,13 @@ exports.addLikeDislikePost = async (req, res, next) => {
             break;
     }
 
-    await User.updateOne({_id : req.params['id']}, user);
+    try {
+        await User.updateOne({_id : req.params['id']}, user);
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
+
 
     delete user['__v'];
     delete user['password'];
@@ -145,7 +183,13 @@ exports.addLikeDislikePost = async (req, res, next) => {
 }
 
 exports.addLikeDislikeComment = async (req, res, next) => {
-    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    let user = {}
+    try {
+        user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
     const commentId = req.body.commentId;
 
     let tempIndex;
@@ -181,7 +225,12 @@ exports.addLikeDislikeComment = async (req, res, next) => {
             break;
     }
 
-    await User.updateOne({_id : req.params['id']}, user);
+    try {
+        await User.updateOne({_id : req.params['id']}, user);
+    }
+    catch(e) {
+        res.status(400).json({error : "Server access failed"});
+    }
 
     delete user['__v'];
     delete user['password'];
@@ -190,7 +239,13 @@ exports.addLikeDislikeComment = async (req, res, next) => {
 }
 
 exports.createPost = async (req, res, next) => {
-    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    let user = {}
+    try {
+        user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
     const postId = req.body.postId;
 
     user.posts.push(postId);
@@ -204,7 +259,13 @@ exports.createPost = async (req, res, next) => {
 }
 
 exports.createComment = async (req, res, next) => {
-    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    let user = {}
+    try {
+        user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
     const commentId = req.body.commentId;
 
     user.comments.push(commentId);
@@ -218,7 +279,13 @@ exports.createComment = async (req, res, next) => {
 }
 
 exports.deletePost = async (req, res, next) => {
-    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    let user = {}
+    try {
+        user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
     const postId = req.body.postId;
 
     const tempIndex = user.posts.indexOf(postId);
@@ -233,7 +300,13 @@ exports.deletePost = async (req, res, next) => {
 }
 
 exports.deleteComment = async (req, res, next) => {
-    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    let user = {}
+    try {
+        user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
     const commentId = req.body.commentId;
 
     const tempIndex = user.comments.indexOf(commentId);
@@ -248,7 +321,13 @@ exports.deleteComment = async (req, res, next) => {
 }
 
 exports.readPost = async (req, res, next) => {
-    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    let user = {}
+    try {
+        user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
     const postId = req.body.postId;
 
     if (user.readPosts.indexOf(postId) == -1) {
@@ -264,7 +343,13 @@ exports.readPost = async (req, res, next) => {
 }
 
 exports.updateUser = async (req, res, next) => {
-    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    let user = {}
+    try {
+        user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
 
     if (req.file) user['pfp'] = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
 
@@ -280,7 +365,13 @@ exports.updateUser = async (req, res, next) => {
 }
 
 exports.deleteUser = async (req, res, next) => {
-    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    let user = {}
+    try {
+        user = (await User.findOne({_id : req.params['id']}))['_doc'];
+    }
+    catch(e) {
+        return res.status(400).json({error : "Server access failed"});
+    }
 
     user.username = '[deleted]';
     user.email = '[deleted]';

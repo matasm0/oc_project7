@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 
-import { Navbar, Nav, Container, Form, Image, Button } from 'react-bootstrap';
+import { Navbar, Nav, Container, Form, Image, Button, Modal } from 'react-bootstrap';
 
 export function Header({currentPage}) {
   const dispatch = useDispatch();
@@ -17,7 +17,7 @@ export function Header({currentPage}) {
   const logoutButton = (e) => {
     e.preventDefault();
     dispatch({type : "users/logout"});
-    navigate("/");
+    navigate("/login");
   }
 
   switch (currentPage) {
@@ -64,5 +64,17 @@ export function Footer() {
         </Container>
       </Navbar>
     </footer>
+  )
+}
+
+export function ErrorModal({show, setShow, error}) {
+  return (
+    <Modal show={show} onHide={() => {setShow(false)}}>
+      <Modal.Header closeButton>
+        <Modal.Body>
+          <p>{error}</p>
+        </Modal.Body>
+      </Modal.Header>
+    </Modal>
   )
 }

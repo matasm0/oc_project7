@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 export const getComments = createAsyncThunk('comments/getComments', async () => {
     const res = await fetch('http://localhost:3001/api/comments/get');
     const data = await res.json();
+    if (res.status == 400) throw new Error(data['error'])
     return data['comments'];
 });
 
@@ -20,6 +21,7 @@ export const addLikeDislike = createAsyncThunk('comments/addLikeDislike', async 
         })
     })
     const data = await res.json();
+    if (res.status == 400) throw new Error(data['error'])
     return data;
 });
 
@@ -30,6 +32,7 @@ const initialState = {
     dict: {},
     currPost: [],
     currPostStatus: "unloaded",
+    error: "",
 };
 
 const commentSlice = createSlice({
@@ -74,6 +77,10 @@ const commentSlice = createSlice({
                 action.payload.forEach(comment => {
                     state.dict[comment._id] = comment;
                 });
+            })
+            .addCase(getComments.rejected, (state, action) => {
+                state.state = "rejected";
+                state.error = "Failed to get comments";
             })
     }
 })
