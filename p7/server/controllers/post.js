@@ -1,5 +1,4 @@
 const Post = require('../models/post');
-const user = require('../models/user');
 
 const postDefault = {
     userId :  "-1",
@@ -14,6 +13,7 @@ const postDefault = {
 async function postPost(req, res, next) {
     const imageUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
     let newPost;
+    console.log(req.body);
 
     try {
         newPost = new Post({...postDefault, ...req.body, imageUrl});

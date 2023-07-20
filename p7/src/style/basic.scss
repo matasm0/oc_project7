@@ -5,6 +5,10 @@
 .header {
     border-bottom: 2px solid rgba(131, 117, 143, 0.5);
 
+    a {
+        text-decoration: none;
+    }
+
     .pfp {
         width: 30px;
         height: 30px;
@@ -22,6 +26,8 @@
 
 .basic-link {
     color: $link-color;
+    margin-left: 20px;
+    margin-right: 10px;
 
     &:hover, &:active {
         color: $link-hover-color;

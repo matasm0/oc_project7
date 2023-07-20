@@ -278,3 +278,18 @@ exports.updateUser = async (req, res, next) => {
     return res.status(200).json({...user});
 
 }
+
+exports.deleteUser = async (req, res, next) => {
+    let user = (await User.findOne({_id : req.params['id']}))['_doc'];
+
+    user.username = '[deleted]';
+    user.email = '[deleted]';
+    user.password = "";
+    user.likedPosts = user.dislikedPosts = user.likedComments = user.dislikedComments 
+                    = user.comments = user.posts = user.readPosts = [];
+    user.pfp = "";
+
+    await User.updateOne({_id : req.params['id']}, user);
+
+    return res.status(200).json({message : "Deleted"});
+}

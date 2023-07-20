@@ -32,6 +32,9 @@ body {
 
 .home {
     @include gutters();
+
+    min-height: calc(100vh - 116px);
+
     display: flex;
 
     
@@ -48,25 +51,26 @@ body {
         margin: 0;
         padding: 0;
         width: 100%;
-        height: auto;
         background-color: $secondary;
 
         display: flex;
         flex-direction: column;
+        align-items: center;
         position: relative;
 
-        .home-navs {
-            display: flex;
-            flex-direction: row;
+        .filter-read {
+            width: 100%;
+            max-width: 720px;
 
-            .home-tabs {
-                flex-grow: 3;
-            }
+            position: absolute;
+            top: 30px;
+
         }
 
         .home-posts {
             background-color: $secondary;
 
+            margin-top: 40px;
             padding : 50px;
 
             display: flex;
@@ -99,7 +103,7 @@ body {
 
                 .post-img {
                     min-height: 400px;
-                    max-height: 550px;
+                    max-height: 500px;
 
                     background-color: $four;
                     object-fit: contain;
@@ -149,6 +153,10 @@ body {
                                 border-radius: 20px;
                                 border: 4px solid black;
                                 background-color: $tertiary;
+
+                                &.active {
+                                    background-color: azure;
+                                }
                             }
                         }
                     }

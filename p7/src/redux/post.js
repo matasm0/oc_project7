@@ -6,7 +6,10 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 //     return data['posts'];
 // });
 
-export const getPosts = (state) => Object.values(state.posts.dict);
+export const getPosts = (state) => {
+    let toReturn = Object.values(state.posts.dict);
+    return toReturn.sort((a, b) => b.created - a.created);
+};
 
 export const getNewPosts = createAsyncThunk('posts/getNewPosts', async () => {
     const res = await fetch('http://localhost:3001/api/posts/get');

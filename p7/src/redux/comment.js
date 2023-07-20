@@ -44,6 +44,8 @@ const commentSlice = createSlice({
             if (action.payload.parent != "root") {
                 state.dict[action.payload.parent].children.push(action.payload._id);
             }
+            // We should probably check whether the postParent is the currentPost but realistically the only way to add a comment would be to be on the current post page
+            state.currPost.push(action.payload);
         },
         remove(state, action) {
             delete state.dict[action.payload];
@@ -57,7 +59,7 @@ const commentSlice = createSlice({
             state.currPostStatus = "unloaded";
         },
         getCommentsPost(state, action) {
-            state.currPost = state.list.filter(comment => comment.postParent == action.payload);
+            state.currPost = state.list.filter(comment => comment.postParent == action.payload).sort((a, b) => b.created - a.created);
             state.currPostStatus = "loaded";
         }
     },
@@ -82,7 +84,9 @@ export const getCommentById = (state, id) => state.comments.lib[id] || {};
 
 // If we are getting rid of list, use dict.items or whatever the right attribute is
 // Uhh dont the post and comments themselves have children lists???
-export const getCommentsChildren = (state, id) => state.comments.currPost.filter(comment => comment.parent == id);
+export const getCommentsChildren = (state, id) => {
+    return state.comments.currPost.filter(comment => comment.parent == id).sort((a, b) => b.created - a.created);
+}
 // Currently not properly adding comments to children to mongo. Fix and remove this selector
 
 

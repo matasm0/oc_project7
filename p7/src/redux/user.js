@@ -118,7 +118,12 @@ const userSlice = createSlice({
     }
 })
 
-export const likeStatus = (state, postId) => {
+export const likeStatus = (state, postId, forPost = true) => {
+    if (!forPost) {
+        return (state.users.currentUser.likedComments.indexOf(postId) != -1) ? 1 :
+               (state.users.currentUser.dislikedComments.indexOf(postId) != -1) ? -1 :
+               0;
+    }
     return (state.users.currentUser.likedPosts.indexOf(postId) != -1) ? 1 :
            (state.users.currentUser.dislikedPosts.indexOf(postId) != -1) ? -1 :
             0;

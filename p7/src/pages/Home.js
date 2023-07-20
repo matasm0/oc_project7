@@ -49,7 +49,9 @@ function Home() {
                             <Button>Upload</Button>
                         </Link>
                     </Container> */}
-                    <Button onClick={e => setFilterRead(!filterRead)}>Show Read Posts</Button>
+                    <Button onClick={e => setFilterRead(!filterRead)} className="filter-read">
+                        {filterRead ? "Show All Posts" : "Show Unread Posts"}
+                    </Button>
                     <Container className="home-posts">
                         <PostList filterRead={filterRead}/>
                     </Container>
@@ -90,6 +92,9 @@ function PostObject({post, isRead}) {
     const dispatch = useDispatch();
     const userId = useSelector(state => state.users.currentUser._id);
 
+    const createdTime = new Date(post.created);
+    const options = {month : "numeric", day : "numeric", year : "numeric", hour : '2-digit', minute : '2-digit'}
+
     const likeDislike = (e) => {
         let likeStatus = e.target.value === 'like' ? 1 : -1;
         dispatch(addLikeDislikePost({
@@ -118,15 +123,15 @@ function PostObject({post, isRead}) {
                             <Image roundedCircle src={author ? author.pfp : require("../imgs/pfp.png")} className="pfp"/>
                             <Card.Text className="author">{author ? author.email : ""}</Card.Text>
                         </div>
-                        
+                        <Card.Text className="post-time">{createdTime.toLocaleString(navigator.language, options)}</Card.Text>
                     </Col>
                 </Row>
                 <Row>
                     <Col className="likeDislike">
-                        <Button className={"like"} value={"like"} onClick={likeDislike}>
+                        <Button className={`like ${isLiked == 1 ? "active" : ""}`} value={"like"} onClick={likeDislike}>
                             {post.likes} {post.likes == 1 ? " Like" : " Likes"} 
                         </Button>
-                        <Button className={"dislike"} value={"dislike"} onClick={likeDislike}>
+                        <Button className={`dislike ${isLiked == -1 ? "active" : ""}`} value={"dislike"} onClick={likeDislike}>
                             {post.dislikes} {post.dislikes == 1 ? " Dislike" : " Dislikes"} 
                         </Button>
                     </Col>

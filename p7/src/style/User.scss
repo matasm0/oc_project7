@@ -13,7 +13,124 @@
 
     .user-page-body {
         min-height: calc(100vh - 116px);
+
+        background-color: $tertiary;
         
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 50px;
+
+        .empty {
+            width: fit-content;
+            margin: 10vh auto;
+        }
+        
+        .pfp {
+            width: 40vw;
+            max-width: 400px;
+            height: 40vw;
+            max-height: 400px;
+
+            margin-top: 50px;
+
+            border: 2px solid black;
+        }
+
+        .editProfile {
+            margin-top: -50px;
+            color: dimgray;
+            text-decoration: none;
+
+            &:hover {
+                color: rgb(145, 144, 144);
+            }
+        }
+
+        .tabs {
+            width: 100%;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            .nav-item {
+                width: 25%;
+
+                button {
+                    width: 100%;
+                    color: black;
+                    border-radius: 0;
+                    border: 1px solid black;
+                }
+
+                &:first-of-type {
+                    button {
+                        border-top-left-radius: 20px;
+                        border-bottom-left-radius: 20px;
+                    }
+                }
+
+                &:last-of-type {
+                    button {
+                        border-top-right-radius: 20px;
+                        border-bottom-right-radius: 20px;
+                    }
+                }
+            }
+        }
+
+        .tab-content {
+            width: 95%;
+
+            .post, .comment {
+                margin-bottom: 30px;
+
+                div {
+                    color: black;
+                }
+            } 
+
+            .post {
+                img {
+                    background-color: lightgray;
+
+                    // FIX Add media query variables for changing width thingies
+                    width: 100%;
+                    max-height: 400px;
+                    // min-height: ;
+
+                    object-fit: contain;
+                }
+            }
+
+            .comment {
+                padding: 0;
+                margin-bottom: 20px;
+        
+                &>* {
+                    background-color: $tertiary;
+                    border: none;
+                    color: black;
+                }
+        
+                .comment-header {
+                    display: flex;
+        
+                    .pfp {
+                        width: 30px;
+                        height: 30px;
+                        margin-right: 7px;
+                        margin-top: -2px;
+                    }
+                }
+        
+                .content {
+                    padding-top: 0;
+                }
+            }
+        }
+
     }
 }
 
@@ -64,6 +181,28 @@
                 background-color: white;
 
                 object-fit: contain;
+            }
+
+            .username {
+                padding: 0 20px;
+            }
+
+            .button-holder {
+                display: flex;
+                justify-content: space-around;
+                gap: 20px;
+
+                button {
+                    width: 40%;
+                }
+            }
+
+            .delete-user {
+                background-color: transparent;
+                border: none;
+                color: dimgray;
+                align-self: flex-end;
+                padding-right: 30px;
             }
         }
     }

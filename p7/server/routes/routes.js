@@ -21,6 +21,7 @@ router.delete('/users/deleteComment/:id', auth, userCtrl.deleteComment);
 router.post('/users/likeComment/:id', userCtrl.addLikeDislikeComment); // auth
 router.post('/users/readPost/:id', userCtrl.readPost); // auth
 router.put('/users/update/:id', auth, multer, userCtrl.updateUser);
+router.put('/users/delete/:id', auth, userCtrl.deleteUser);
 
 router.post('/posts/create', auth, multer, postCtrl.postPost);
 router.get('/posts/get', postCtrl.getPosts);

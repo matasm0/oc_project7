@@ -87,6 +87,7 @@ export const PostInfo = (postId) => {
     toReturn.post.image = post.imageUrl;
     toReturn.post.likes = post.likes;
     toReturn.post.dislikes = post.dislikes;
+    toReturn.post.created = post.created;
 
     
     // Userslist is not loaded
@@ -164,6 +165,7 @@ export const CommentInfo = (commentId) => {
     // toReturn.comment.children = comment.children;
     toReturn.comment.children = tempChildren;
     toReturn.comment.parent = comment.parent;
+    toReturn.comment.created = comment.created;
 
     if (usersStatus === "unloaded") {
         return toReturn;

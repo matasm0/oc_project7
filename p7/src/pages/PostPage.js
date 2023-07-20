@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { getComments, getCommentsChildren, create } from "../redux/comment";
 import { getPostById } from "../redux/post";
-import { addLikeDislikeComment } from "../redux/actions";
+import { addLikeDislikeComment, addLikeDislikePost } from "../redux/actions";
 
 import { readPost } from "../redux/user";
 
@@ -107,16 +107,17 @@ function PostPage() {
   const userId = useSelector(state => state.users.currentUser._id);
   const token = useSelector(state => state.users.currentUser.token);
 
+  const isLiked = useSelector(state => likeStatus(state, postId));
+
   // Unload post on Unmount
   useEffect(() => () => {
     dispatch({type : "posts/unload"});
-    // dispatch({type : "comments/unload"});
+    dispatch({type : "comments/unload"});
   }, []);
 
   // Add post to read on mount
-  // IF THE POST HAS BEEN READ DO NOT RUN THIS. THAT IS STUPID
-  // I think that means we have to run this when the post loads.
   useEffect(() => {
+    window.scrollTo(0, 0);
     dispatch(readPost({user : userId, post : postId}));
   }, []);
 
@@ -135,6 +136,18 @@ function PostPage() {
         navigate("/home");
       })
     })
+  }
+
+  const likeDislike = (e) => {
+    let likeStatus = e.target.value === 'like' ? 1 : -1;
+    dispatch(addLikeDislikePost({
+        _id: userId
+    },
+    {
+        _id : postId
+    },
+    likeStatus
+    ))
   }
 
   // We would love temporary loading objects
@@ -169,12 +182,22 @@ function PostPage() {
         {postObjects.title}
         {postObjects.author}
       </div>
-      {(author.id === userId) && <Button onClick={deletePostButton}>Delete</Button>}
     </Container>;
 
     postObjects.actions = 
-    <div className="post-actions">
-      <Button onClick={e => setMakeComment(true)}>Comment</Button>
+    <div className="button-line">
+      <div className="standard">
+        <Button className={`like ${isLiked == 1 ? "active" : ""}`} value={"like"} onClick={likeDislike}>
+            {post.likes} {post.likes == 1 ? " Like" : " Likes"} 
+        </Button>
+        <Button className={`dislike ${isLiked == -1 ? "active" : ""}`} value={"dislike"} onClick={likeDislike}>
+            {post.dislikes} {post.dislikes == 1 ? " Dislike" : " Dislikes"} 
+        </Button>
+        <Button onClick={e => setMakeComment(true)}>Comment</Button>
+      </div>
+      <div className="is-op">
+        {(author.id === userId) && <Button onClick={deletePostButton}>Delete</Button>}
+      </div>
       <AddCommentPage {...{show : makeComment, setShow : setMakeComment, userId, postId, parentId : "root", token}}/>
     </div>
   }
@@ -185,6 +208,7 @@ function PostPage() {
       <Container className="post-body">
         {postObjects.content}
         {postObjects.actions}
+        <div className="hr" />
         <Comments/>
       </Container>
       <Footer/>
@@ -199,19 +223,21 @@ function Comments() {
   const postCommentsList = useSelector(state => state.comments.currPost);
   const dispatch = useDispatch();
 
+  // console.log(postCommentsList)
+
 
 
   useEffect(() => {
-    if (commentState === "unloaded") {
-      dispatch(getComments());
+    if (commentState === "loaded" && postCommentState === "unloaded") {
+      dispatch({type : "comments/getCommentsPost", payload : postId});
     }
-  }, [commentState, dispatch]);
+  }, [commentState]);
+
 
 
   // We probably load all comments at once, so find only the comments that are root
   let commentObjects;
   if (commentState === "loaded") {
-    if (postCommentState == "unloaded") dispatch({type : "comments/getCommentsPost", payload : postId})
     commentObjects = postCommentsList.map(comment => {
       return <Comment key={comment._id} {...{commentId : comment._id, threadParent: true}}/>
     })
@@ -229,14 +255,18 @@ function Comments() {
 // Have a user store with a dictionary of users that contains usernames and pfps mayhaps
 function Comment({commentId, _maxLevel = 1, threadParent = false}) {
   const dispatch = useDispatch();
+  const options = {month : "numeric", day : "numeric", year : "numeric", hour : '2-digit', minute : '2-digit'}
 
   const { postId } =  useParams();
 
   // comment prop will just be id
   const { author, comment } = CommentInfo(commentId);
+  const createdTime = new Date(comment.created);
 
   const userId = useSelector(state => state.users.currentUser._id);
   const token = useSelector(state => state.users.currentUser.token);
+  const isLiked = useSelector(state => likeStatus(state, commentId, false));
+  // FIX liking comments does not update DOM
 
   const [makeComment, setMakeComment] = useState(false);
   const [editComment, setEditComment] = useState(false);
@@ -300,11 +330,12 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
     commentObjects.author = 
     <Card.Header className="comment-header">
       <Image src={author.pfp || require("../imgs/pfp.png")} roundedCircle className="pfp"/>
-      {author.username}
+      <Card.Text>{author.username}</Card.Text>
+      <Card.Text>{createdTime.toLocaleString(navigator.language, options)}</Card.Text>
     </Card.Header>
 
     commentObjects.content = 
-    <Card.Body>
+    <Card.Body className="content">
       <Card.Text>{comment.content}</Card.Text>
     </Card.Body>
 
@@ -319,13 +350,21 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
       {commentObjects.content}
       <Card.Footer>
         {commentObjects.footer}
-        {(author.id == userId) && 
-        <>
-          <Button onClick={e => setEditComment(true)}>Edit</Button>
-          <Button onClick={deleteCommentButton}>Delete</Button>
-        </>}
-        <Button value={"like"} onClick={likeDislike}>Like</Button>
-        <Button value={"dislike"} onClick={likeDislike}>Dislike</Button>
+        <div className="button-line">
+          <div className="standard">
+            <Button className={`like ${isLiked == 1 ? "active" : ""}`} value={"like"} onClick={likeDislike}>
+              {comment.likes} {comment.likes == 1 ? " Like" : " Likes"} 
+            </Button>
+            <Button className={`dislike ${isLiked == -1 ? "active" : ""}`} value={"dislike"} onClick={likeDislike}>
+                {comment.dislikes} {comment.dislikes == 1 ? " Dislike" : " Dislikes"} 
+            </Button>
+          </div>
+          {(author.id == userId) && 
+          <div className="is-op">
+            <Button onClick={e => setEditComment(true)}>Edit</Button>
+            <Button onClick={deleteCommentButton}>Delete</Button>
+          </div>}
+        </div>
         {expandButton}
       </Card.Footer>
     </Card>
