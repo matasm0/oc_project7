@@ -21,7 +21,7 @@ export const addLikeDislike = createAsyncThunk('comments/addLikeDislike', async 
         })
     })
     const data = await res.json();
-    if (res.status == 400) throw new Error(data['error'])
+    if (res.status == 400) throw new Error(data['error']);
     return data;
 });
 
@@ -64,6 +64,9 @@ const commentSlice = createSlice({
         getCommentsPost(state, action) {
             state.currPost = state.list.filter(comment => comment.postParent == action.payload).sort((a, b) => b.created - a.created);
             state.currPostStatus = "loaded";
+        },
+        logout(state, action) {
+            return initialState;
         }
     },
     extraReducers(builder) {

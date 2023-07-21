@@ -36,16 +36,30 @@ export default function Data () {
     const usersDict = useSelector(state => state.users.dict);
     
     useEffect (() => {
-        if (userStatus === "unloaded") {
+        if (userStatus === "rejected") {
             dispatch(getUsers());
         }
-        if (postStatus === "unloaded") {
+        if (postStatus === "rejected") {
             dispatch(getNewPosts());
         }
-        if (commentStatus === "unloaded") {
+        if (commentStatus === "rejected") {
             dispatch(getComments());
         }
-    }, [dispatch, userStatus, postStatus, commentStatus])
+    }, [])
+
+    useEffect (() => {
+        if (loginStatus) {
+            if (userStatus === "unloaded") {
+                dispatch(getUsers());
+            }
+            if (postStatus === "unloaded") {
+                dispatch(getNewPosts());
+            }
+            if (commentStatus === "unloaded") {
+                dispatch(getComments());
+            }
+        }
+    }, [dispatch, userStatus, postStatus, commentStatus, loginStatus])
 }
 
 // Have this have like a "user" object and stuff that other files can import so they don't have to keep using useSelector

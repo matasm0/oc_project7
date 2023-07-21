@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 
 import { Navbar, Nav, Container, Form, Image, Button, Modal } from 'react-bootstrap';
+import { logout } from '../redux/actions';
 
 export function Header({currentPage}) {
   const dispatch = useDispatch();
@@ -16,7 +17,7 @@ export function Header({currentPage}) {
 
   const logoutButton = (e) => {
     e.preventDefault();
-    dispatch({type : "users/logout"});
+    dispatch(logout());
     navigate("/login");
   }
 

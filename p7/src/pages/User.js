@@ -3,7 +3,7 @@ import "../style/User.scss";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Button, Card, Container, Form, Image, Tab, Tabs } from "react-bootstrap";
-import { Footer, Header } from "../components/basic";
+import { Footer, Header, ErrorModal } from "../components/basic";
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CommentInfo, PostInfo } from "../redux/actions";
@@ -69,10 +69,14 @@ export default function UserPage() {
     const currentUser = useSelector(state => state.users.currentUser);
 
     const { userId } = useParams("userId");
-    const [user, setUser] = useState(<Container className="user-page-body">
+    const [ showError, setShowError ] = useState(false);
+    const [ error, setError ] = useState("");
+    const [user, setUser] = useState(
+                                    <Container className="user-page-body">
                                         <Image src={require('../imgs/pfp.png')} className="pfp" roundedCircle/>
                                         <p>Username</p>
-                                    </Container>);
+                                    </Container>
+                                    );
 
     const postList = useSelector(state => state.posts.dict);
 
@@ -104,7 +108,7 @@ export default function UserPage() {
 
             
                 setUser(
-                <Container className="user-page-body">
+                <Container className="user-page-body">    
                     <Image src={currUser.pfp || require('../imgs/pfp.png')} className='pfp' roundedCircle/>
                     <h2 className="username">{currUser.username}</h2>
                     {currentUser._id == currUser._id && <Link to={"/user/settings"} className="editProfile">Edit Profile</Link>} 
@@ -130,12 +134,16 @@ export default function UserPage() {
                             </div>
                         </Tab>
                     </Tabs>
-                </Container>);
+                </Container>
+                );
             }
             else {
                 setUser(<p>User Does Not Exist</p>)
             }
-        }))
+        })).catch(e => {
+            setShowError(true);
+            setError("Network Error");
+        })
     }, []);
 
 
@@ -145,6 +153,7 @@ export default function UserPage() {
             <Header currentPage={"home"}/>
             {user}
             <Footer/>
+            <ErrorModal {...{show : showError, setShow : setShowError, error : error}}/>
         </div>
     )
     

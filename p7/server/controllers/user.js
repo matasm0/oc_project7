@@ -22,33 +22,32 @@ async function login(req, res, next) {
         return res.status(400).json({error : "Server access failed"});
     }
 
-    const user = tempRes['_doc']
+    
 
-    if (!user) {
-        res.status(400).json({error : "Invalid username/password"});
+    if (!tempRes) {
+        return res.status(400).json({error : "Invalid username/password"});
     }
-    else {   
-        bcrypt.compare(password, user.password).then((valid) => {
-            if (valid) {
-                const token = jwt.sign(
-                    {userId : user._id},
-                    'RANDOM_TOKEN_SECRET',
-                    {expiresIn : '24h'}
-                )
+    const user = tempRes['_doc']  
+    bcrypt.compare(password, user.password).then((valid) => {
+        if (valid) {
+            const token = jwt.sign(
+                {userId : user._id},
+                'RANDOM_TOKEN_SECRET',
+                {expiresIn : '24h'}
+            )
 
-                // We don't need __v, and we don't want to send the password
-                delete user['__v'];
-                delete user['password'];
+            // We don't need __v, and we don't want to send the password
+            delete user['__v'];
+            delete user['password'];
 
-                res.status(200).json({
-                    ...user,
-                    token : token,
-                });
-            }
-            else 
-                res.status(400).json({message : "Invalid username/password"});
-        });
-    }
+            res.status(200).json({
+                ...user,
+                token : token,
+            });
+        }
+        else 
+            res.status(400).json({message : "Invalid username/password"});
+    });
 }
 
 exports.login = (req, res, next) => login(req, res, next);

@@ -78,6 +78,9 @@ const postSlice = createSlice({
         clearError: (state, action) => {
             state.currentOperationStatus = "idle";
             state.error = "";
+        },
+        logout: (state, action) => {
+            return initialState;
         }
     },
     extraReducers(builder) {
@@ -90,7 +93,7 @@ const postSlice = createSlice({
                 state.list = state.list.concat(action.payload);
                 action.payload.forEach(post => {
                     state.dict[post._id] = post;
-                })
+                });
             })
             .addCase(getNewPosts.rejected, (state, action) => {
                 state.state = 'rejected';

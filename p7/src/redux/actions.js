@@ -21,6 +21,14 @@ export const addLikeDislikeComment = (user, comment, likeStatus) => {
     }
 }
 
+export const logout = () => {
+    return (dispatch, state) => {
+        dispatch({type : "users/logout"});
+        dispatch({type : "posts/logout"});
+        dispatch({type : "comments/logout"});
+    }
+}
+
 // Returns all of the relevant information that a component rendering a post will use
 export const PostInfo = (postId) => {
     let toReturn = {

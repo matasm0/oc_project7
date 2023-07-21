@@ -94,7 +94,7 @@ const userSlice = createSlice({
         },
         logout: (state, action) => {
             localStorage.removeItem("user");
-            state.currentUser = {loggedIn : false};
+            return initialState;
         },
         updateUser: (state, action) => {
             state.currentUser = {...state.currentUser, ...action.payload};
