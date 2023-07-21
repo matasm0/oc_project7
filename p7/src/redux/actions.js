@@ -137,6 +137,7 @@ export const CommentInfo = (commentId) => {
             dislikes : -1,
             children : [],
             parent : "",
+            postParent : "",
             created : -1,
         }
     }
@@ -173,6 +174,7 @@ export const CommentInfo = (commentId) => {
     // toReturn.comment.children = comment.children;
     toReturn.comment.children = tempChildren;
     toReturn.comment.parent = comment.parent;
+    toReturn.comment.postParent = comment.postParent;
     toReturn.comment.created = comment.created;
 
     if (usersStatus === "unloaded") {

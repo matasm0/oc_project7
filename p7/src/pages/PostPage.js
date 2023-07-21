@@ -110,6 +110,7 @@ function PostPage() {
   const token = useSelector(state => state.users.currentUser.token);
 
   const isLiked = useSelector(state => likeStatus(state, postId));
+  const isDeleted = post.likes == -1;
 
   // Unload post on Unmount
   useEffect(() => () => {
@@ -170,13 +171,18 @@ function PostPage() {
   // BUILDING WITH LEGOS
   // FIX I am using temporary html elements, change to better react ones
   if (post.status === 'loaded') {
-    postObjects.title = <h1>{post.title}</h1>;
+    postObjects.title = <h1>{isDeleted ? "[Post has been deleted]" : post.title}</h1>
     postObjects.author = 
+    !isDeleted ? 
     <div className="author-info">
       <h3>posted by</h3>
       <Image src={author.pfp || require("../imgs/pfp.png")} roundedCircle className="pfp"/>
       <h3><b>{author.username}</b></h3>
       <p>{createdTime.toLocaleString(navigator.language, options)}</p>
+    </div> :
+    <div className="author-info">
+      <h3>posted by</h3>
+      <Image src={require("../imgs/pfp.png")} roundedCircle className="pfp"/>
     </div>
 
 
@@ -194,13 +200,13 @@ function PostPage() {
     postObjects.actions = 
     <div className="button-line">
       <div className="standard">
-        <Button className={`like ${isLiked == 1 ? "active" : ""}`} value={"like"} onClick={likeDislike}>
+        <Button className={`like ${isLiked == 1 ? "active" : ""}`} value={"like"} onClick={likeDislike} disabled={isDeleted}>
             {post.likes} {post.likes == 1 ? " Like" : " Likes"} 
         </Button>
-        <Button className={`dislike ${isLiked == -1 ? "active" : ""}`} value={"dislike"} onClick={likeDislike}>
+        <Button className={`dislike ${isLiked == -1 ? "active" : ""}`} value={"dislike"} onClick={likeDislike} disabled={isDeleted}>
             {post.dislikes} {post.dislikes == 1 ? " Dislike" : " Dislikes"} 
         </Button>
-        <Button onClick={e => setMakeComment(true)}>Comment</Button>
+        <Button onClick={e => setMakeComment(true)} disabled={isDeleted}>Comment</Button>
       </div>
       <div className="is-op">
         {(author.id === userId) && <Button onClick={deletePostButton}>Delete</Button>}
@@ -287,6 +293,8 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
   const [numShownComments, setNumComments] = useState(_maxLevel == 0 ? 0 : Math.min(childrenList.length, 5));
   const [maxLevel, setMaxLevel] = useState(_maxLevel);
 
+  const isDeleted = comment.likes == -1;
+
   // ADD GUARDS
   if (!comment) return <></>;
 
@@ -360,10 +368,10 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
         {commentObjects.footer}
         <div className="button-line">
           <div className="standard">
-            <Button className={`like ${isLiked == 1 ? "active" : ""}`} value={"like"} onClick={likeDislike}>
+            <Button className={`like ${isLiked == 1 ? "active" : ""}`} value={"like"} onClick={likeDislike} disabled={isDeleted}>
               {comment.likes} {comment.likes == 1 ? " Like" : " Likes"} 
             </Button>
-            <Button className={`dislike ${isLiked == -1 ? "active" : ""}`} value={"dislike"} onClick={likeDislike}>
+            <Button className={`dislike ${isLiked == -1 ? "active" : ""}`} value={"dislike"} onClick={likeDislike} disabled={isDeleted}>
                 {comment.dislikes} {comment.dislikes == 1 ? " Dislike" : " Dislikes"} 
             </Button>
             <Button className="add-comment" onClick={e => setMakeComment(true)}>Comment</Button>

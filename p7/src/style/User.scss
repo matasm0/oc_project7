@@ -11,8 +11,13 @@
     flex-direction: column;
     justify-content: space-between;
 
+    a {
+        text-decoration: none;
+    }
+
     .user-page-body {
         min-height: calc(100vh - 116px);
+        padding: 0;
 
         background-color: $tertiary;
         
@@ -47,8 +52,19 @@
             }
         }
 
+        .tab-holder {
+            width: 100%;
+
+            background-color: whitesmoke;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         .tabs {
             width: 100%;
+            margin-top: -10px;
 
             display: flex;
             flex-direction: row;
@@ -60,21 +76,11 @@
                 button {
                     width: 100%;
                     color: black;
-                    border-radius: 0;
                     border: 1px solid black;
-                }
+                    background-color: $tertiary;
 
-                &:first-of-type {
-                    button {
-                        border-top-left-radius: 20px;
-                        border-bottom-left-radius: 20px;
-                    }
-                }
-
-                &:last-of-type {
-                    button {
-                        border-top-right-radius: 20px;
-                        border-bottom-right-radius: 20px;
+                    &.active {
+                        background-color: whitesmoke;
                     }
                 }
             }
@@ -83,8 +89,9 @@
         .tab-content {
             width: 95%;
 
-            .post, .comment {
+            .post, .comment-object {
                 margin-bottom: 30px;
+                margin-top: 30px;
 
                 div {
                     color: black;
@@ -92,41 +99,78 @@
             } 
 
             .post {
-                img {
-                    background-color: lightgray;
+                @include shadow();
 
-                    // FIX Add media query variables for changing width thingies
+                border: 2px solid black;
+                background-color: $tertiary;
+
+                .author {
+                    display: flex;
+                    gap: 10px;
+                    .pfp {
+                        width: 30px;
+                        height: 30px;
+                        margin: 0;
+                    }
+                }
+
+                img {
+                    background-color: $tertiary;
+
                     width: 100%;
                     max-height: 400px;
-                    // min-height: ;
 
                     object-fit: contain;
+
                 }
             }
 
-            .comment {
-                padding: 0;
-                margin-bottom: 20px;
+            .comments {
+                gap: 0;
+            }
+
+            .comment-object {
         
                 &>* {
                     background-color: $tertiary;
                     border: none;
                     color: black;
                 }
-        
-                .comment-header {
-                    display: flex;
-        
-                    .pfp {
-                        width: 30px;
-                        height: 30px;
-                        margin-right: 7px;
-                        margin-top: -2px;
-                    }
+
+                .comment-parent {
+                    @include shadow();
+
+                    padding-left: 7px;
+                    padding-bottom: 20px;
+                    margin: 0;
+                    border-top-left-radius: 8px;
+                    border-top-right-radius: 8px;
                 }
+
+                .comment {
+                    @include shadow();
+
+                    padding: 0;
+                    margin: 0;
+                    margin-bottom: 20px;
+                    border-top-left-radius: 0;
+                    border-top-right-radius: 0;
         
-                .content {
-                    padding-top: 0;
+                    .comment-header {
+                        display: flex;
+            
+                        .pfp {
+                            width: 30px;
+                            height: 30px;
+                            margin-right: 7px;
+                            margin-top: -2px;
+                        }
+                    }
+            
+                    .content {
+                        padding-top: 0;
+                        padding-left: 50px;
+                    }
                 }
             }
         }
@@ -187,13 +231,27 @@
                 padding: 0 20px;
             }
 
+            .username-input {
+                @include button-shadow();
+            }
+
             .button-holder {
                 display: flex;
                 justify-content: space-around;
                 gap: 20px;
 
                 button {
+                    @include button-shadow();
+
                     width: 40%;
+
+                    border-radius: 20px;
+                    border: 2px solid black;
+                    background-color: $tertiary;
+
+                    &:hover {
+                        background-color: $secondary;
+                    }
                 }
             }
 
@@ -203,6 +261,44 @@
                 color: dimgray;
                 align-self: flex-end;
                 padding-right: 30px;
+            }
+        }
+    }
+}
+
+@media (max-width: 800px) {
+    .user-page {
+        .user-page-body {
+            width: 100%;
+            max-width: none;
+            margin-top: 58px;
+        }
+
+        .tabs {
+            .nav-item {
+                button {
+                    height: 100%;
+                    padding: 0;
+                    text-align: center;
+                    vertical-align: middle;
+                }
+            }
+        }
+    }
+
+    .user-setup {
+        .user-setup-body {
+            width: 100%;
+            max-width: none;
+            height: calc(100vh - 116px);
+            max-height: none;
+
+            margin-top: 58px;
+
+            border: none;
+
+            .user-setup-form {
+                justify-content: space-around;
             }
         }
     }

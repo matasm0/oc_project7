@@ -35,3 +35,10 @@ $link-hover-color: $tertiary;
     }
 }
 
+@mixin shadow {
+    box-shadow: 10px 5px 5px $secondary;
+}
+
+@mixin button-shadow {
+    box-shadow: 4px 3px 3px $secondary;
+}

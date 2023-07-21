@@ -55,11 +55,22 @@
     gap: 50px;
 
     button {
+        @include button-shadow(); 
+
         background-color: $tertiary;
         border-radius: 25px;
         border: 2px solid black;
 
         color: black;
+
+        &:hover {
+            background-color: $secondary;
+        }
+
+        &.active {
+            background-color: azure;
+            color: black;
+        }
     }
 
     .standard {

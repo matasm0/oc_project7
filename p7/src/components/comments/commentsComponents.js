@@ -1,3 +1,5 @@
+import "../../style/components.scss";
+
 import { Form, Modal, Button } from "react-bootstrap";
 import { useState } from "react";
 
@@ -79,7 +81,7 @@ export function AddCommentPage({show, setShow, userId, postId, parentId, token})
                     <Modal.Title>Add a comment</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Form onSubmit={createComment}>
+                    <Form onSubmit={createComment} className="modal-form">
                         <Form.Group>
                             <Form.Control onChange={inputHandler}></Form.Control>
                             <Form.Text></Form.Text>
@@ -113,7 +115,7 @@ export function EditCommentPage({show, setShow, commentId, token, prevComment}) 
                     <Modal.Title>Edit your comment</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Form onSubmit={editCommentButton}>
+                    <Form onSubmit={editCommentButton} className="modal-form">
                         <Form.Group>
                             <Form.Control value={comment} onChange={e => setComment(e.target.value)}></Form.Control>
                             <Form.Text></Form.Text>

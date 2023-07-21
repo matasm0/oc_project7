@@ -81,7 +81,7 @@ function Login({ isLogin }) {
                     if (res.status == 200) res.json().then(data => {
                         console.log(data);
                         dispatch({type: "users/login", payload: data});
-                        navigate("/users/setup");
+                        navigate("/user/setup");
                     })
                 })
             }
@@ -109,7 +109,7 @@ function Login({ isLogin }) {
     return (
         <>
             <ErrorModal {...{show : showError, setShow : setShowError, error : error}}/>
-            <p className="welcome" style={{ padding: "0px 30px" }}>Welcome to [Insert name of Site]</p>
+            <p className="welcome" style={{ padding: "0px 30px" }}>Welcome {isLogin && " back "}to [Connect]</p>
             <Form className="login tp" style={{ padding: "0px 30px" }} onSubmit={isLogin ? loginSubmit : signupSubmit}>
                 <Row>
                     <Col md>

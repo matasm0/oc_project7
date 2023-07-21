@@ -33,7 +33,7 @@ exports.postPost = postPost;
 
 async function getPosts(req, res, next) {
     let postList = []
-    try {postList = await Post.find({'userId' : {$ne : 'deleted'}}).exec();}
+    try {postList = await Post.find().exec();}
     catch(e) {return res.status(400).json({error : "Failed to get posts"})}
 
     return res.status(200).json({posts : postList});

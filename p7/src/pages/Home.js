@@ -66,11 +66,13 @@ function Home() {
 // action which will give it all of the information that it needs
 function PostList({filterRead = false}) {
     // const postsList = useSelector(state => state.posts.list);
-    const postsList = useSelector(state => getPosts(state));
+    let postsList = useSelector(state => getPosts(state));
     const userReadList = useSelector(state => state.users.currentUser.readPosts);
     
     const postsState = useSelector(state => state.posts.state);
     const empty = <div>Nothing to see here!</div>
+
+    postsList = postsList.filter(post => post.likes != -1);
 
     let postObjects = [];
     if (postsState === "loaded") {
@@ -122,7 +124,7 @@ function PostObject({post, isRead}) {
                         </Link>
                         <Link to={`/user/${post.userId}`} className="post-author">
                             <Card.Text className="pre-author">Posted by </Card.Text>
-                            <Image roundedCircle src={author ? author.pfp : require("../imgs/pfp.png")} className="pfp"/>
+                            <Image roundedCircle src={author ? author.pfp || require("../imgs/pfp.png") : require("../imgs/pfp.png")} className="pfp"/>
                             <Card.Text className="author">{author ? author.email : ""}</Card.Text>
                         </Link>
                         <Card.Text className="post-time">{createdTime.toLocaleString(navigator.language, options)}</Card.Text>

@@ -142,6 +142,10 @@ body {
 
                                 margin: 0 2px 0 5px;
                             }
+
+                            &:hover {
+                                color: gray;
+                            }
                         }
 
                         .likeDislike {
@@ -155,12 +159,16 @@ body {
 
                                 color: black;
 
-                                border-radius: 20px;
+                                border-radius: 25px;
                                 border: 4px solid black;
                                 background-color: $tertiary;
 
                                 &.active {
                                     background-color: azure;
+                                }
+
+                                &:hover {
+                                    background-color: $secondary;
                                 }
                             }
                         }

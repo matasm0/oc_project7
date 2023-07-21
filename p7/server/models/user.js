@@ -12,7 +12,7 @@ const userSchema = mongoose.Schema({
     dislikedComments : {type : [String], required : true},
     readPosts : {type : [String], required : true},
     username : {type : String, required : true},
-    pfp : {type : String, required : true}
+    pfp : {type : String, required : false}
 })
 
 module.exports = mongoose.model("User", userSchema, collection = "users");

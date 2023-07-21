@@ -70,12 +70,15 @@ async function signup(req, res, next) {
             // FIX
             bcrypt.hash(password, 10).then((hashedPw) => {
                 const user = new User({
+                    username : email,
                     email : email,
-                    password : hashedPw
+                    password : hashedPw,
+                    pfp : "",
                 })
                 user.save().then(() => {
                     res.status(200).json({message : "User created"});
                 }).catch(e => {
+                    console.log(e);
                     res.status(400).json({error : "Failed to create user"});
                 })
             })    

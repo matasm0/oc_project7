@@ -6,7 +6,7 @@ import { Button, Card, Container, Form, Image, Tab, Tabs } from "react-bootstrap
 import { Footer, Header, ErrorModal } from "../components/basic";
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { CommentInfo, PostInfo } from "../redux/actions";
+import { CommentInfo, PostInfo, logout } from "../redux/actions";
 
 async function updateUser(formData, userId, token) {
     return await fetch ('http://localhost:3001/api/users/update/' + userId, {
@@ -23,6 +23,7 @@ function PostObject({postId}) {
     const { author, post } = PostInfo(postId);
 
     if (post.status === "missing") return;
+    if (post.likes == -1) return;
     if (author.status === "missing") author.username = "[Deleted]";
 
     return (
@@ -31,8 +32,13 @@ function PostObject({postId}) {
                 <Card.Img src={post.image}/>
                 <Card.Header>
                     <div>
-                        <div className="title">{post.title}</div>
-                        <div className="username">{author ? author.username : ""}</div>
+                        <h4 className="title">{post.title}</h4>
+                        <div className="author">
+                            <Image src={author.pfp || require("../imgs/pfp.png")} roundedCircle className="pfp"/>
+                            <Card.Text className="username">
+                                {author ? author.username : ""}
+                            </Card.Text>
+                        </div>
                     </div>
                 </Card.Header>
             </Card>
@@ -42,30 +48,34 @@ function PostObject({postId}) {
 
 function CommentObject({commentId}) {
     const {author, comment} = CommentInfo(commentId);
+    const { post } = PostInfo(comment.postParent);
     const options = {month : "numeric", day : "numeric", year : "numeric", hour : '2-digit', minute : '2-digit'}
 
     if (comment.status == "missing") return;
+    if (comment.likes == -1) return;
 
     const createdTime = new Date(comment.created);
 
     return (
-        <Link to={"/home"}>
-            <Card className="comment">
-                <Card.Header className="comment-header">
-                    <Image src={author.pfp || require("../imgs/pfp.png")} roundedCircle className="pfp"/>
-                    <Card.Text>{author.username}</Card.Text>
-                    <Card.Text>{createdTime.toLocaleString(navigator.language, options)}</Card.Text>
-                </Card.Header>
-                <Card.Body className="content">
-                    <Card.Text>{comment.content}</Card.Text>
-                </Card.Body>
-            </Card>
+        <Link to={"/post/" + post.id}>
+            <div className="comment-object">
+                <h4 className="comment-parent">On post: {post.title || "[Deleted]"}</h4>
+                <Card className="comment">
+                    <Card.Header className="comment-header">
+                        <Image src={author.pfp || require("../imgs/pfp.png")} roundedCircle className="pfp"/>
+                        <Card.Text>{author.username}</Card.Text>
+                        <Card.Text>{createdTime.toLocaleString(navigator.language, options)}</Card.Text>
+                    </Card.Header>
+                    <Card.Body className="content">
+                        <Card.Text>{comment.content}</Card.Text>
+                    </Card.Body>
+                </Card>
+            </div>
         </Link>
     )
 }
 
 export default function UserPage() {
-    const dispatch = useDispatch();
     const currentUser = useSelector(state => state.users.currentUser);
 
     const { userId } = useParams("userId");
@@ -111,29 +121,32 @@ export default function UserPage() {
                 <Container className="user-page-body">    
                     <Image src={currUser.pfp || require('../imgs/pfp.png')} className='pfp' roundedCircle/>
                     <h2 className="username">{currUser.username}</h2>
-                    {currentUser._id == currUser._id && <Link to={"/user/settings"} className="editProfile">Edit Profile</Link>} 
-                    <Tabs className="tabs">
-                        <Tab eventKey="posts" title="Posts">
-                            <div className="posts">
-                                {posts.length ? posts : empty}
-                            </div>
-                        </Tab>
-                        <Tab eventKey="comments" title="Comments">
-                            <div className="comments">
-                                {comments.length ? comments : empty}
-                            </div>
-                        </Tab>
-                        <Tab eventKey="likedPosts" title="Liked Posts">
-                            <div className="likedPosts">
-                                {likedPosts.length ? likedPosts : empty}
-                            </div>
-                        </Tab>
-                        <Tab eventKey="likedComments" title="Liked Comments">
-                            <div className="likedComments">
-                                {likedComments.length ? likedComments : empty}
-                            </div>
-                        </Tab>
-                    </Tabs>
+                    {currentUser._id == currUser._id && <Link to={"/user/settings"} className="editProfile">Edit Profile</Link>}
+                    <div className="tab-holder">
+                        <Tabs className="tabs">
+                            <div className="hr"></div>
+                            <Tab eventKey="posts" title="Posts">
+                                <div className="posts">
+                                    {posts.length ? posts : empty}
+                                </div>
+                            </Tab>
+                            <Tab eventKey="comments" title="Comments">
+                                <div className="comments">
+                                    {comments.length ? comments : empty}
+                                </div>
+                            </Tab>
+                            <Tab eventKey="likedPosts" title="Liked Posts">
+                                <div className="likedPosts">
+                                    {likedPosts.length ? likedPosts : empty}
+                                </div>
+                            </Tab>
+                            <Tab eventKey="likedComments" title="Liked Comments">
+                                <div className="likedComments">
+                                    {likedComments.length ? likedComments : empty}
+                                </div>
+                            </Tab>
+                        </Tabs>
+                    </div>
                 </Container>
                 );
             }
@@ -202,6 +215,7 @@ export function UserSetup({firstTime = false}) {
                 "Authorization" : "Bearer " + token
             }
         }).then(res => res.json()).then(data => {
+            dispatch(logout());
             navigate("/signup");
         })
     }
@@ -220,7 +234,7 @@ export function UserSetup({firstTime = false}) {
                     </Form.Group>
                     <Form.Group className="username">
                         <Form.Label>{firstTime ? "Choose a cool username" : "Change your username"}</Form.Label>
-                        <Form.Control type="text" onChange={e => setUsername(e.target.value)} value={username}/>
+                        <Form.Control type="text" onChange={e => setUsername(e.target.value)} value={username} className="username-input"/>
                         <Form.Text/>
                     </Form.Group>
                     {!firstTime ?
