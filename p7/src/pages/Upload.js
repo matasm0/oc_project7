@@ -79,8 +79,8 @@ function Upload() {
     return (
         <div className="upload-page">
             <Header currentPage={"home"}/>
-            <Container>
-                <Form onSubmit={upload}>
+            <Container className="upload-body">
+                <Form onSubmit={upload} className="upload-form">
                     <Row>
                         <Col md>
                             <Form.Group controlId="formTitle">
@@ -95,8 +95,10 @@ function Upload() {
                             </Form.Group>
                         </Col>
                     </Row>
-                    <Link to={"/home"}><Button>Cancel</Button></Link>
-                    <Button type="submit">Submit</Button>
+                    <div className="buttons">
+                        <Link to={"/home"}><Button>Cancel</Button></Link>
+                        <Button type="submit">Submit</Button>
+                    </div>
                 </Form>
             </Container>
             <Footer/>
