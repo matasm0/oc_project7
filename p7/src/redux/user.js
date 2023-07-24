@@ -69,7 +69,7 @@ const initialState = {
     currentUser : {
         loggedIn : false,
         // email : "",
-        // id : "", // Change to _id and just steal
+        // id : "", // Change to id and just steal
         // token : "",
         // posts : [], // Maybe these refresh on refresh?
         // comments : [],
@@ -112,7 +112,7 @@ const userSlice = createSlice({
             .addCase(getUsers.fulfilled, (state, action) => {
                 state.status = "loaded";
                 action.payload.forEach(user => {
-                    state.dict[user._id] = user;
+                    state.dict[user.id] = user;
                 })
             })
             .addCase(getUsers.rejected, (state, action) => {

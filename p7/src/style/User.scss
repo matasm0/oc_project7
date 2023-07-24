@@ -247,6 +247,8 @@
                 button {
                     @include button-shadow();
 
+                    color: black;
+
                     width: 40%;
 
                     border-radius: 20px;

@@ -64,7 +64,7 @@ export function AddCommentPage({show, setShow, userId, postId, parentId, token})
         e.preventDefault();
         postComment(userId, postId, parentId, comment, token).then(
             res => {if (res.status == 201) res.json().then(data => {
-        addCommentToUser(userId, data._id, token).then(
+        addCommentToUser(userId, data.id, token).then(
             res => res.json()).then(newUser => {
             dispatch(create(data));
             dispatch({type : "users/updateUser", payload : newUser})

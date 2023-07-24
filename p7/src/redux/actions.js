@@ -9,15 +9,15 @@ import { addLikeDislike as cAddLikeDislike, getCommentsChildren } from "./commen
 
 export const addLikeDislikePost = (user, post, likeStatus) => {
     return (dispatch, state) => {
-        dispatch(uAddLikeDislikePost({user : user._id, post : post._id, likeStatus : likeStatus}));
-        dispatch(pAddLikeDislike({user : user._id, post : post._id, likeStatus : likeStatus}));
+        dispatch(uAddLikeDislikePost({user : user.id, post : post.id, likeStatus : likeStatus}));
+        dispatch(pAddLikeDislike({user : user.id, post : post.id, likeStatus : likeStatus}));
     }
 }
 
 export const addLikeDislikeComment = (user, comment, likeStatus) => {
     return (dispatch, state) => {
-        dispatch(uAddLikeDislikeComment({user : user._id, comment : comment._id, likeStatus : likeStatus}));
-        dispatch(cAddLikeDislike({user : user._id, comment : comment._id, likeStatus : likeStatus}));
+        dispatch(uAddLikeDislikeComment({user : user.id, comment : comment.id, likeStatus : likeStatus}));
+        dispatch(cAddLikeDislike({user : user.id, comment : comment.id, likeStatus : likeStatus}));
     }
 }
 
@@ -69,7 +69,7 @@ export const PostInfo = (postId) => {
     
     // Haha! This needs to be an if if not if else if
     if (currentStatus === 'loaded') {
-        if (current && current._id == postId)
+        if (current && current.id == postId)
             post = current;
             toReturn.post.status = "loaded";
     }
@@ -112,7 +112,7 @@ export const PostInfo = (postId) => {
         return toReturn;
     }
 
-    toReturn.author.id = author._id;
+    toReturn.author.id = author.id;
     toReturn.author.email = author.email;
     toReturn.author.username = author.username;
     toReturn.author.pfp = author.pfp;
@@ -190,7 +190,7 @@ export const CommentInfo = (commentId) => {
         return toReturn;
     }
 
-    toReturn.author.id = author._id;
+    toReturn.author.id = author.id;
     toReturn.author.email = author.email;
     toReturn.author.username = author.username;
     toReturn.author.pfp = author.pfp;

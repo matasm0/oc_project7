@@ -68,7 +68,7 @@ function Login({ isLogin }) {
                 'password' : password
             })
         }).then(res => res.json().then(temp => {
-            if (res.status == 200) {
+            if (res.status == 201) {
                 fetch('http://localhost:3001/api/auth/login', 
                 {
                     method : "POST",

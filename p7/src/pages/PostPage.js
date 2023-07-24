@@ -16,51 +16,6 @@ import { readPost } from "../redux/user";
 import { PostInfo, CommentInfo } from "../redux/actions";
 import { AddCommentPage, EditCommentPage } from "../components/comments/commentsComponents";
 
-// extradite these functions into their respective component files
-async function postComment(userId, postId, parentId, comment, token) {
-  return await fetch('http://localhost:3001/api/comments/create',
-  {
-    method : "POST",
-    headers : {
-      "Authorization" : "Bearer " + token,
-      "Content-Type" : "application/json"},
-    body : JSON.stringify({
-      'author' : userId,
-      'parent' : parentId,
-      'postParent' : postId,
-      'content' : comment,
-      'created' : Date.now(),
-    })
-  });
-}
-
-async function addCommentToUser(userId, commentId, token) {
-  return await fetch('http://localhost:3001/api/users/createComment/' + userId, {
-    method : "POST",
-    headers : {
-      "Authorization" : "Bearer " + token,
-      "Content-Type" : "application/json"
-    },
-    body : JSON.stringify({
-      commentId : commentId
-    })
-  });
-}
-
-async function editComment(commentId, content, token) {
-  return await fetch('http://localhost:3001/api/comments/edit/' + commentId,
-  {
-    method : "PUT",
-    headers : {
-      "Authorization" : "Bearer " + token,
-      "Content-Type" : "application/json"
-    },
-    body : JSON.stringify({
-      content : content
-    })
-  })
-}
-
 async function deleteComment(commentId, token) {
   return await fetch('http://localhost:3001/api/comments/delete/' + commentId,
   {
@@ -99,14 +54,15 @@ function PostPage() {
   const dispatch = useDispatch();
   const options = {month : "numeric", day : "numeric", year : "numeric", hour : '2-digit', minute : '2-digit'}
 
-  const { postId } =  useParams();
+  let { postId } =  useParams();
+  postId = Number(postId);
 
   const { author, post } = PostInfo(postId); 
   const createdTime = new Date(post.created); 
 
   const [makeComment, setMakeComment] = useState(false);
 
-  const userId = useSelector(state => state.users.currentUser._id);
+  const userId = useSelector(state => state.users.currentUser.id);
   const token = useSelector(state => state.users.currentUser.token);
 
   const isLiked = useSelector(state => likeStatus(state, postId));
@@ -148,10 +104,10 @@ function PostPage() {
   const likeDislike = (e) => {
     let likeStatus = e.target.value === 'like' ? 1 : -1;
     dispatch(addLikeDislikePost({
-        _id: userId
+        id: userId
     },
     {
-        _id : postId
+        id : postId
     },
     likeStatus
     ))
@@ -253,7 +209,7 @@ function Comments() {
   let commentObjects;
   if (commentState === "loaded") {
     commentObjects = rootCommentsList.map(comment => {
-      return <Comment key={comment._id} {...{commentId : comment._id, threadParent: true}}/>
+      return <Comment key={comment.id} {...{commentId : comment.id, threadParent: true}}/>
     })
   }
 
@@ -271,13 +227,14 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
   const dispatch = useDispatch();
   const options = {month : "numeric", day : "numeric", year : "numeric", hour : '2-digit', minute : '2-digit'}
 
-  const { postId } =  useParams();
+  let { postId } =  useParams();
+  postId = Number(postId);
 
   // comment prop will just be id
   const { author, comment } = CommentInfo(commentId);
   const createdTime = new Date(comment.created);
 
-  const userId = useSelector(state => state.users.currentUser._id);
+  const userId = useSelector(state => state.users.currentUser.id);
   const token = useSelector(state => state.users.currentUser.token);
   const isLiked = useSelector(state => likeStatus(state, commentId, false));
   // FIX liking comments does not update DOM
@@ -300,7 +257,7 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
 
   if (maxLevel > 0) {
     for (let i = 0; i < numShownComments; i++) {
-      childrenObjects.push(<Comment key={childrenList[i]._id} {...{commentId : childrenList[i]._id, _maxLevel : maxLevel - 1}}/>)
+      childrenObjects.push(<Comment key={childrenList[i].id} {...{commentId : childrenList[i].id, _maxLevel : maxLevel - 1}}/>)
     }
   }
 
@@ -318,17 +275,17 @@ function Comment({commentId, _maxLevel = 1, threadParent = false}) {
 
   const deleteCommentButton = (e) => {
     deleteComment(commentId, token).then(res => res.json()).then(data => {
-      dispatch ({type : "comments/update", payload : data});
+      dispatch ({type : "comments/update", payload : {id : comment.id, ...data}});
     });
   }
 
   const likeDislike = (e) => {
     let likeStatus = e.target.value == 'like' ? 1 : -1;
     dispatch(addLikeDislikeComment({
-      _id : userId
+      id : userId
     },
     {
-      _id : commentId
+      id : commentId
     },
     likeStatus
     ))

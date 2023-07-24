@@ -43,9 +43,9 @@ const commentSlice = createSlice({
             // DOING Check the parent of the comment. If it is root then do nothing, if not then find its parent
             // in the dictionary and add it as a child.
             state.list.push(action.payload);
-            state.dict[action.payload._id] = action.payload;
+            state.dict[action.payload.id] = action.payload;
             if (action.payload.parent != "root") {
-                state.dict[action.payload.parent].children.push(action.payload._id);
+                state.dict[action.payload.parent].children.push(action.payload.id);
             }
             // We should probably check whether the postParent is the currentPost but realistically the only way to add a comment would be to be on the current post page
             state.currPost.push(action.payload);
@@ -54,7 +54,7 @@ const commentSlice = createSlice({
             delete state.dict[action.payload];
         },
         update(state, action) {
-            state.dict[action.payload._id] = {...state.dict[action.payload._id], ...action.payload};
+            state.dict[action.payload.id] = {...state.dict[action.payload.id], ...action.payload};
             state.list = Object.values(state.dict);
         },
         unload(state) {
@@ -78,7 +78,7 @@ const commentSlice = createSlice({
                 state.state = "loaded";
                 state.list = action.payload;
                 action.payload.forEach(comment => {
-                    state.dict[comment._id] = comment;
+                    state.dict[comment.id] = comment;
                 });
             })
             .addCase(getComments.rejected, (state, action) => {

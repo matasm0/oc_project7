@@ -63,7 +63,7 @@ const postSlice = createSlice({
         createPost: (state, action) => {
             console.log(action.payload)
             state.list = state.list.concat(action.payload);
-            state.dict[action.payload._id] = action.payload;
+            state.dict[action.payload.id] = action.payload;
         },
         update: (state, action) => {
             console.log("Update post"); 
@@ -92,7 +92,7 @@ const postSlice = createSlice({
                 state.state = 'loaded';
                 state.list = state.list.concat(action.payload);
                 action.payload.forEach(post => {
-                    state.dict[post._id] = post;
+                    state.dict[post.id] = post;
                 });
             })
             .addCase(getNewPosts.rejected, (state, action) => {
@@ -111,8 +111,8 @@ const postSlice = createSlice({
                 state.error = "Failed to get post";
             })
             .addCase(addLikeDislike.fulfilled, (state, action) => {
-                state.dict[action.payload._id] = action.payload;
-                if (state.current._id == action.payload._id) 
+                state.dict[action.payload.id] = action.payload;
+                if (state.current.id == action.payload.id) 
                     state.current = action.payload;
             })
     }

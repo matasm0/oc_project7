@@ -1,83 +1,134 @@
-const Comment = require('../models/comment');
-
-const commentDefault = {
-    likes : 0,
-    dislikes : 0,
-    usersLiked : [],
-    usersDisliked : [],
-    children : [],
-}
-
-// Comments need : author, parent, postParent, content
+// const Comment = require('../models/comment');
+require("../models/comment")
+const dbPromise = require('../connect');
 
 async function postComment(req, res, next) {
-    let newComment;
+    const db = await dbPromise;
+
+    let comment = {
+        author : "",
+        content : "",
+        likes : 0,
+        dislikes : 0,
+        usersLiked : [],
+        usersDisliked : [],
+        parent : -1,
+        postParent : -1,
+        children : [],
+        created : -1
+    }
+    req.body.created = Number(req.body.created);
+    req.body.author = Number(req.body.author);
+    req.body.postParent = Number(req.body.postParent);
+    if (req.body.parent != "root") req.body.parent = Number(req.body.parent);
+
+    comment = {...comment, ...req.body};
+
+    const cols = Object.keys(comment).join(", ");
+    const qs = Object.keys(comment).fill("?").join(", ");
+    const values = Object.values(comment).map(obj => (typeof obj == "object") ? JSON.stringify(obj) : obj);
 
     try {
-        newComment = new Comment({...commentDefault, ...req.body});
+        const data = await db.run(`INSERT INTO Comments (${cols}) VALUES (${qs})`, values)
+        const toReturn = (await db.all(`SELECT * FROM Comments WHERE id=${data['lastID']}`))[0];
+        for (let prop in toReturn)
+            if (toReturn[prop][0] == '[') toReturn[prop] = JSON.parse(toReturn[prop]);
+        return res.status(201).json({...toReturn});
     }
     catch (e) {
-        console.log(e)
         return res.status(401).json({message : "Failed to add comment", e})
     }
-
-    let newCommentObject = (await newComment.save())['_doc'];
-
-    res.status(201).json({...newCommentObject});
 }
 
 exports.postComment = postComment;
 
 async function getCommentsPost(req, res, next) {
+    const db = await dbPromise;
+
     let commentsList = []
-    try {commentsList = await Comment.find({'postParent' : req.params['postId']}).exec()}
+
+    try {
+        commentsList = await db.all(`SELECT * FROM Comments WHERE postParent=${Number(req.params['postId'])}`)
+    }
     catch(e) {return res.status(400).json({error : "Failed to get comments"})}
 
-    return res.status(200).json({comments : commentsList});
+    const toReturn = [];
+    commentsList.forEach(comment => {
+        for (let prop in comment)
+            if (comment[prop][0] == '[') comment[prop] = JSON.parse(comment[prop]);
+        toReturn.push({...comment})
+    })
+
+    return res.status(200).json({comments : toReturn});
 }
 
 exports.getCommentsPost = getCommentsPost;
 
 exports.getComments = async (req, res, next) => {
+    const db = await dbPromise;
+
     let commentsList = []
-    try {commentsList = await Comment.find().exec();}
+
+    try {
+        commentsList = await db.all(`SELECT * FROM Comments`)
+    }
     catch(e) {return res.status(400).json({error : "Failed to get comments"})}
-    return res.status(200).json({comments : commentsList});
+
+    const toReturn = [];
+    commentsList.forEach(comment => {
+        for (let prop in comment)
+            if (comment[prop][0] == '[') comment[prop] = JSON.parse(comment[prop]);
+        toReturn.push({...comment})
+    })
+
+    return res.status(200).json({comments : toReturn});
 }
 
-// Have a get comments Id or something that also returns the parent and the child comment
+// // Have a get comments Id or something that also returns the parent and the child comment
 
 exports.updateComment = async (req, res, next) => {
-    let comment = {}
-    try {comment = (await Comment.findOne({_id : req.params['id']}))["_doc"]}
-    catch(e) {return res.status(400).json({error : "Failed to update comment"})}
-    let newComment = {...comment, ...req.body};
-    await Comment.updateOne({_id : req.params['id']}, newComment);
+    const db = await dbPromise;
 
-    return res.status(200).json({...newComment});
-}
+    await db.run(`UPDATE Comments SET content=? WHERE id=?`, req.body.content, req.params['id']);
 
-exports.deleteComment = async (req, res, next) => {
-    let comment = {
-        _id : req.params['id'],
-        author : '[deleted]',
-        content : '[comment deleted]',
-        likes : -1,
-        dislikes : -1,
-        usersLiked : [],
-        usersDisliked : [],
-    }
-
-    try {await Comment.updateOne({_id : req.params['id']}, comment);}
-    catch(e) {return res.status(400).json({error : "Failed to delete comment"})}
+    const comment = (await db.all(`SELECT * FROM Comments WHERE id=${req.params['id']}`))[0];
+    for (let prop in comment)
+        if (comment[prop][0] == '[') comment[prop] = JSON.parse(comment[prop]);
 
     return res.status(200).json({...comment});
 }
 
+exports.deleteComment = async (req, res, next) => {
+    const db = await dbPromise;
+
+    let comment = {
+        author : 'deleted',
+        content : 'comment deleted',
+        likes : -1,
+        dislikes : -1,
+    }
+
+    try {
+        const toSet = [];
+        toReturn = {...comment}
+        for (let prop in comment) {
+            if (prop != "likes" && prop != "dislikes") comment[prop] = `'${comment[prop]}'`;
+            toSet.push(`${prop} = ${comment[prop]}`);
+        }
+        await db.run(`UPDATE Comments SET ${toSet.join(", ")} WHERE id=?`, req.params['id']);
+        return res.status(200).json({...toReturn});
+    }
+    catch(e) {return res.status(400).json({error : "Failed to delete comment"});}
+}
+
 exports.addLikeDislike = async (req, res, next) => {
+    const db = await dbPromise;
     let comment = {}
-    try {comment = (await Comment.findOne({_id : req.params['id']}))['_doc']}
+    try {comment = (await db.all(`SELECT * FROM Comments WHERE id='${req.params['id']}'`))[0]}
     catch(e) {return res.status(400).json({error : "Failed to like/dislike comment"})}
+    for (let prop in comment)
+        if (comment[prop][0] == '[') comment[prop] = JSON.parse(comment[prop]);
+
     const userId = req.body.userId;
 
     let tempIndex;
@@ -109,7 +160,17 @@ exports.addLikeDislike = async (req, res, next) => {
     comment.likes = comment.usersLiked.length;
     comment.dislikes = comment.usersDisliked.length;
 
-    await Comment.updateOne({_id : req.params['id']}, comment);
+    try {
+        const toSet = [];
+        toSet.push(`usersLiked = '${JSON.stringify(comment.usersLiked)}'`);
+        toSet.push(`usersDisliked = '${JSON.stringify(comment.usersDisliked)}'`);
+        toSet.push(`likes = ${comment.likes}`);
+        toSet.push(`dislikes = ${comment.dislikes}`);
+        await db.run(`UPDATE Comments SET ${toSet.join(", ")} WHERE id=?`, req.params['id']);
+    }
+    catch(e) {
+        return res.status(400).json({error : "Failed to update comment"});
+    }
 
     return res.status(200).json({...comment})
 }

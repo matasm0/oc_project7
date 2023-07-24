@@ -77,9 +77,9 @@ function PostList({filterRead = false}) {
     let postObjects = [];
     if (postsState === "loaded") {
         postObjects = postsList.map(post => {
-            const isRead = (userReadList.indexOf(post._id) != -1);
+            const isRead = (userReadList.indexOf(post.id) != -1);
             if (isRead && filterRead) return
-            return <PostObject key={post._id} {...{post, isRead}}/>
+            return <PostObject key={post.id} {...{post, isRead}}/>
         })
 
     }
@@ -92,9 +92,9 @@ function PostList({filterRead = false}) {
 function PostObject({post, isRead}) {
     // Take in post id or something so it can fill itself
     const author = useSelector(state => findUser(state, post.userId));
-    const isLiked = useSelector(state => likeStatus(state, post._id));
+    const isLiked = useSelector(state => likeStatus(state, post.id));
     const dispatch = useDispatch();
-    const userId = useSelector(state => state.users.currentUser._id);
+    const userId = useSelector(state => state.users.currentUser.id);
 
     const createdTime = new Date(post.created);
     const options = {month : "numeric", day : "numeric", year : "numeric", hour : '2-digit', minute : '2-digit'}
@@ -102,10 +102,10 @@ function PostObject({post, isRead}) {
     const likeDislike = (e) => {
         let likeStatus = e.target.value === 'like' ? 1 : -1;
         dispatch(addLikeDislikePost({
-            _id: userId
+            id: userId
         },
         {
-            _id : post._id
+            id : post.id
         },
         likeStatus
         ))
@@ -113,13 +113,13 @@ function PostObject({post, isRead}) {
     
     return (
         <Card className={`post ${isRead ? 'isRead' : ""}`}>
-            <Link to={`/post/${post._id}`}>
+            <Link to={`/post/${post.id}`}>
                 <Card.Img className="post-img" variant="top" src={post.imageUrl}></Card.Img>
             </Link>
             <Card.Body className="post-body">
                 <Row>
                     <Col className="card-text">
-                        <Link to={`/post/${post._id}`}>
+                        <Link to={`/post/${post.id}`}>
                             <Card.Text className="post-title">{post.title}</Card.Text>
                         </Link>
                         <Link to={`/user/${post.userId}`} className="post-author">

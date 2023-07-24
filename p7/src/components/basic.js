@@ -9,7 +9,7 @@ export function Header({currentPage}) {
   const navigate = useNavigate();
 
   const pfp = useSelector(state => state.users.currentUser.pfp);
-  const userId = useSelector(state=>state.users.currentUser._id);
+  const userId = useSelector(state=>state.users.currentUser.id);
   
   const logo = <Navbar.Brand className='basic-link'><Link to={'/home'}>Connect</Link></Navbar.Brand>;
 
@@ -61,7 +61,7 @@ export function Footer() {
     <footer>
       <Navbar className='footer'>
         <Container>
-          <p className="basic-text">A</p>
+          <p className="basic-text">Copyright 2023 GroupMania</p>
         </Container>
       </Navbar>
     </footer>

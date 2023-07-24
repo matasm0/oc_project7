@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button, Card, Container, Form, Image, Tab, Tabs } from "react-bootstrap";
 import { Footer, Header, ErrorModal } from "../components/basic";
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, createMemoryRouter, useNavigate, useParams } from "react-router-dom";
 import { CommentInfo, PostInfo, logout } from "../redux/actions";
 
 async function updateUser(formData, userId, token) {
@@ -22,9 +22,11 @@ function PostObject({postId}) {
 
     const { author, post } = PostInfo(postId);
 
+    if (!post) return;
+
     if (post.status === "missing") return;
     if (post.likes == -1) return;
-    if (author.status === "missing") author.username = "[Deleted]";
+    if (!author || author.status === "missing") author.username = "[Deleted]";
 
     return (
         <Link to={"/home"}>
@@ -78,7 +80,8 @@ function CommentObject({commentId}) {
 export default function UserPage() {
     const currentUser = useSelector(state => state.users.currentUser);
 
-    const { userId } = useParams("userId");
+    let { userId } = useParams("userId");
+    userId = Number(userId)
     const [ showError, setShowError ] = useState(false);
     const [ error, setError ] = useState("");
     const [user, setUser] = useState(
@@ -121,7 +124,7 @@ export default function UserPage() {
                 <Container className="user-page-body">    
                     <Image src={currUser.pfp || require('../imgs/pfp.png')} className='pfp' roundedCircle/>
                     <h2 className="username">{currUser.username}</h2>
-                    {currentUser._id == currUser._id && <Link to={"/user/settings"} className="editProfile">Edit Profile</Link>}
+                    {currentUser.id == currUser.id && <Link to={"/user/settings"} className="editProfile">Edit Profile</Link>}
                     <div className="tab-holder">
                         <Tabs className="tabs">
                             <div className="hr"></div>
@@ -177,7 +180,7 @@ export function UserSetup({firstTime = false}) {
     const dispatch = useDispatch();
 
     const token = useSelector(state => state.users.currentUser.token);
-    const userId = useSelector(state => state.users.currentUser._id);
+    const userId = useSelector(state => state.users.currentUser.id);
     const currPfp = useSelector(state => state.users.currentUser.pfp);
     const currUsername = useSelector(state => state.users.currentUser.username);
     const [file, setFile] = useState();

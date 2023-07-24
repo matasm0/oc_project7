@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { createPost } from "../redux/post"
 import { useState, useEffect } from "react"
-import { Footer, Header } from "../components/basic"
+import { Footer, Header, ErrorModal } from "../components/basic"
 
 async function postPost (formData, userToken) {
     return await fetch('http://localhost:3001/api/posts/create',
@@ -41,11 +41,14 @@ function Upload() {
     const [title, setTitle] = useState("");
     const [file, setFile] = useState("");
     const [fileUrl, setFileUrl] = useState("");
+
+    const [error, setError] = useState("");
+    const [showError, setShowError] = useState(false);
  
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const posts = useSelector(state => state.posts);
-    const userId = useSelector(state => state.users.currentUser._id);
+    const userId = useSelector(state => state.users.currentUser.id);
     const userToken = useSelector(state => state.users.currentUser.token);
 
     const upload = (e) => {
@@ -56,11 +59,14 @@ function Upload() {
         formData.append("image", file);
         formData.append("created", Date.now())
         postPost(formData, userToken).then((res) => res.json()).then(data => {
-        addPostToUser(data['post']['_id'], userId, userToken).then(res => res.json()).then(newUser => {
+        addPostToUser(data['post']['id'], userId, userToken).then(res => res.json()).then(newUser => {
             dispatch(createPost(data['post']));
             dispatch({type : "users/updateUser", payload : newUser});
             navigate("/home");
         });
+        }).catch(e => {
+            setShowError(true);
+            setError(e.message);
         });
     }
 
@@ -78,6 +84,7 @@ function Upload() {
 
     return (
         <div className="upload-page">
+            <ErrorModal {...{show : showError, setShow : setShowError, error : error}}/>
             <Header currentPage={"home"}/>
             <Container className="upload-body">
                 <Form onSubmit={upload} className="upload-form">
